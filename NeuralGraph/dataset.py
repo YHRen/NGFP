@@ -19,7 +19,7 @@ class MolData(Dataset):
         return prep.tensorise_smiles(smiles, max_atoms=self.max_atom, max_degree=self.max_degree)
 
     def __getitem__(self, i):
-        return self.atoms[i], self.bonds[i], self.edges[i], self.label[i]
+        return (self.atoms[i], self.bonds[i], self.edges[i]), self.label[i]
 
     def split(self, batch_size):
         return

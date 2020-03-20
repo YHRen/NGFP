@@ -2,7 +2,7 @@ import numpy as np
 from rdkit import Chem
 from . import feature
 from tqdm import tqdm
-import torch as T
+import torch
 
 
 def padaxis(array, new_size, axis, pad_value=0, pad_right=True):
@@ -114,6 +114,6 @@ def tensorise_smiles(smiles, max_degree=5, max_atoms=None):
             degree = len(neighbours)
             edge_tensor[mol_ix, a1_ix, : degree] = neighbours
 
-    return T.from_numpy(atom_tensor).float(), \
-           T.from_numpy(bond_tensor).float(), \
-           T.from_numpy(edge_tensor).long()
+    return torch.from_numpy(atom_tensor).float(), \
+           torch.from_numpy(bond_tensor).float(), \
+           torch.from_numpy(edge_tensor).long()

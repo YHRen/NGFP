@@ -1,6 +1,5 @@
 import torch as T
 from torch import nn
-from torch.nn import functional as F
 import numpy as np
 from .util import lookup_neighbors
 
@@ -86,7 +85,7 @@ class GraphConv(nn.Module):
         new_features = None
         for degree in range(self.max_degree):
             atom_masks_this_degree = (atom_degrees == degree).float()
-            new_unmasked_features = F.relu(self.inner_3D_layers[degree](summed_features))
+            new_unmasked_features = T.relu(self.inner_3D_layers[degree](summed_features))
             # Do explicit masking because TimeDistributed does not support masking
             new_masked_features = new_unmasked_features * atom_masks_this_degree
 
@@ -171,7 +170,7 @@ class GraphOutput(nn.Module):
         summed_features = T.cat([atoms, summed_bond_features], dim=-1)
 
         #Compute fingerprint
-        fingerprint_out_unmasked = F.tanh(self.inner_3D_layer(summed_features))
+        fingerprint_out_unmasked = T.tanh(self.inner_3D_layer(summed_features))
 
         # Do explicit masking because TimeDistributed does not support masking
         fingerprint_out_masked = fingerprint_out_unmasked * general_atom_mask
