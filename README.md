@@ -1,3 +1,15 @@
+# PyTorch Implementation of Neural Graph Fingerprint
+forked from: https://github.com/XuhanLiu/NGFP
+
+## Reproducing the original paper
+
+|Dataset | Solubility    | Drug Efficacy | Photovoltaic
+|:-------| ------------- | ------------  | -------
+|MSE     | 0.44 +- 0.058 | XXXX          | XXXX
+|--------| ------------- | ------------  | -------
+
+* **Solubility**: `reproduce_delaney.py` Averaged over 5 runs, 8:1:1 for train, validate and test.
+
 # Convolutional Neural Graph Fingerprint
 PyTorch-based Neural Graph Fingerprint for Organic Molecule Representations
 
