@@ -1,11 +1,13 @@
 # PyTorch Implementation of Neural Graph Fingerprint
 forked from: https://github.com/XuhanLiu/NGFP
 
+* **Update**: change `tanh` to `softmax` in `GraphConvOut` module. (`tanh` causes non-positive "bits" in finger prints)
 ## Reproducing the original paper
 
-|Dataset | Solubility   | Drug Efficacy | Photovoltaic
-|:-------| ------------ | ------------  | -------
-|MSE     | 0.44(0.058)  | XXXX          | XXXX
+| Dataset  | Solubility (MSE) | Drug Efficacy | Photovoltaic
+| :------- | ------------     | ------------  | -------
+| tanh     | 0.44(0.058)      | XXXX          | XXXX
+| softmax  | 0.41(0.049)      | XXXX          | XXXX
 
 * **Solubility**: `reproduce_delaney.py` Averaged over 5 runs, 8:1:1 for train, validate and test.
 

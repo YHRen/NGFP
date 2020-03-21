@@ -170,7 +170,8 @@ class GraphOutput(nn.Module):
         summed_features = T.cat([atoms, summed_bond_features], dim=-1)
 
         #Compute fingerprint
-        fingerprint_out_unmasked = T.tanh(self.inner_3D_layer(summed_features))
+        #fingerprint_out_unmasked = T.tanh(self.inner_3D_layer(summed_features))
+        fingerprint_out_unmasked = T.softmax(self.inner_3D_layer(summed_features), dim=-1)
 
         # Do explicit masking because TimeDistributed does not support masking
         fingerprint_out_masked = fingerprint_out_unmasked * general_atom_mask

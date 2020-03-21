@@ -6,10 +6,12 @@ from torch import optim
 import time
 from .util import dev
 class NeuralFingerPrint(nn.Module):
-    def __init__(self, hid_dim):
+    def __init__(self, hid_dim, max_degree=6):
         super(NeuralFingerPrint, self).__init__()
-        self.gcn1 = GraphConv(input_dim=43, conv_width=128)
-        self.gcn2 = GraphConv(input_dim=134, conv_width=128)
+        self.gcn1 = GraphConv(input_dim=43, conv_width=128,
+                              max_degree=max_degree)
+        self.gcn2 = GraphConv(input_dim=134, conv_width=128,
+                              max_degree=max_degree)
         self.gop = GraphOutput(input_dim=134, output_dim=128)
         self.pool = GraphPool()
     
@@ -24,9 +26,9 @@ class NeuralFingerPrint(nn.Module):
         return fp
 
 class QSAR(nn.Module):
-    def __init__(self, hid_dim, n_class):
+    def __init__(self, hid_dim, n_class, max_degree=6):
         super(QSAR, self).__init__()
-        self.nfp = NeuralFingerPrint(hid_dim)
+        self.nfp = NeuralFingerPrint(hid_dim, max_degree=max_degree)
         # self.bn = nn.BatchNorm2d(80)
         self.mlp = nn.Sequential(nn.Linear(hid_dim, hid_dim//2),
                                  nn.ReLU(),
