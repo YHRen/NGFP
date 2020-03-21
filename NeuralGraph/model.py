@@ -5,14 +5,17 @@ import numpy as np
 from torch import optim
 import time
 from .util import dev
+
 class NeuralFingerPrint(nn.Module):
-    def __init__(self, hid_dim, max_degree=6):
+    def __init__(self, hid_dim, max_degree=6,\
+                 gcn_activation='relu', gop_activation='softmax'):
         super(NeuralFingerPrint, self).__init__()
         self.gcn1 = GraphConv(input_dim=43, conv_width=128,
-                              max_degree=max_degree)
+                              max_degree=max_degree, activation=gcn_activation)
         self.gcn2 = GraphConv(input_dim=134, conv_width=128,
-                              max_degree=max_degree)
-        self.gop = GraphOutput(input_dim=134, output_dim=128)
+                              max_degree=max_degree, activation=gcn_activation)
+        self.gop = GraphOutput(input_dim=134, output_dim=128,
+                               activation=gop_activation)
         self.pool = GraphPool()
     
     def forward(self, atoms, bonds, edges):
@@ -26,9 +29,11 @@ class NeuralFingerPrint(nn.Module):
         return fp
 
 class QSAR(nn.Module):
-    def __init__(self, hid_dim, n_class, max_degree=6):
+    def __init__(self, hid_dim, n_class, max_degree=6, \
+                 gcn_activation='relu', gop_activation='softmax'):
         super(QSAR, self).__init__()
-        self.nfp = NeuralFingerPrint(hid_dim, max_degree=max_degree)
+        self.nfp = NeuralFingerPrint(hid_dim, max_degree=max_degree,
+                 gcn_activation=gcn_activation, gop_activation=gop_activation)
         # self.bn = nn.BatchNorm2d(80)
         self.mlp = nn.Sequential(nn.Linear(hid_dim, hid_dim//2),
                                  nn.ReLU(),

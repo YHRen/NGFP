@@ -56,11 +56,12 @@ class GraphConv(nn.Module):
     # References
         - [Convolutional Networks on Graphs for Learning Molecular Fingerprints](https://arxiv.org/abs/1509.09292)
     '''
-    def __init__(self, input_dim, conv_width, max_degree=6):
+    def __init__(self, input_dim, conv_width, max_degree=6, activation='relu'):
         super(GraphConv, self).__init__()
         self.conv_width = conv_width
         self.max_degree = max_degree
         self.inner_3D_layers = nn.ModuleList([nn.Linear(input_dim, self.conv_width) for _ in range(max_degree)])
+        self.activation = activation
         # for degree in range(max_degree):
 
     def forward(self, *input, mask=None):
@@ -85,7 +86,15 @@ class GraphConv(nn.Module):
         new_features = None
         for degree in range(self.max_degree):
             atom_masks_this_degree = (atom_degrees == degree).float()
-            new_unmasked_features = T.relu(self.inner_3D_layers[degree](summed_features))
+            ## Changed
+            if self.activation == 'relu':
+                new_unmasked_features = T.relu(self.inner_3D_layers[degree](summed_features))
+            elif self.activation == 'tanh':
+                new_unmasked_features = T.tanh(self.inner_3D_layers[degree](summed_features))
+            elif self.activation == 'sigmoid':
+                new_unmasked_features = T.sigmoid(self.inner_3D_layers[degree](summed_features))
+            else:
+                raise NotImplementedError
             # Do explicit masking because TimeDistributed does not support masking
             new_masked_features = new_unmasked_features * atom_masks_this_degree
 
@@ -149,10 +158,11 @@ class GraphOutput(nn.Module):
             - [Convolutional Networks on Graphs for Learning Molecular Fingerprints](https://arxiv.org/abs/1509.09292)
     """
 
-    def __init__(self, input_dim=128, output_dim=128):
+    def __init__(self, input_dim=128, output_dim=128, activation='softmax'):
         super(GraphOutput, self).__init__()
         self.fp_len = output_dim
         self.inner_3D_layer = nn.Linear(input_dim, self.fp_len)
+        self.activation = activation
 
     def forward(self, atoms, bonds, edges):
 
@@ -170,8 +180,14 @@ class GraphOutput(nn.Module):
         summed_features = T.cat([atoms, summed_bond_features], dim=-1)
 
         #Compute fingerprint
-        #fingerprint_out_unmasked = T.tanh(self.inner_3D_layer(summed_features))
-        fingerprint_out_unmasked = T.softmax(self.inner_3D_layer(summed_features), dim=-1)
+        if self.activation == 'tanh':
+            fingerprint_out_unmasked = T.tanh(self.inner_3D_layer(summed_features))
+        elif self.activation == 'softmax':
+            fingerprint_out_unmasked = T.softmax(self.inner_3D_layer(summed_features), dim=-1)
+        elif self.activation == 'sigmoid':
+            fingerprint_out_unmasked = T.sigmoid(self.inner_3D_layer(summed_features))
+        else:
+            raise NotImplementedError
 
         # Do explicit masking because TimeDistributed does not support masking
         fingerprint_out_masked = fingerprint_out_unmasked * general_atom_mask
