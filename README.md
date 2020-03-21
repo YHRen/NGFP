@@ -11,6 +11,16 @@ forked from: https://github.com/XuhanLiu/NGFP
 
 * **Solubility**: `reproduce_delaney.py` Averaged over 5 runs, 8:1:1 for train, validate and test.
 
+## Reproducing Fingerprint Similarity Correlation
+
+### Grid search activations for GraphConvNet (gcn) and GraphOutput (gop)
+Gridsaerch of 
+```python
+gcn_act = ['sigmoid', 'relu', 'tanh']
+gop_act = ['sigmoid', 'tanh', 'softmax']
+large_weights = [(-1e7, 1e7), (0, 1e7), (-1e3, 1e3), (-10, 10)]
+max_degs = [1, 6]
+```
 |params                                                             |  correlation
 |------------------------------------------------------------------ |-------------
 |gcn-sigmoid_gop-softmax_weights-(-1000.0, 1000.0)_radius-1         |    0.716294
