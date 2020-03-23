@@ -6,10 +6,11 @@ forked from: https://github.com/XuhanLiu/NGFP
 
 | Dataset  | Solubility (MSE) | Drug Efficacy | Photovoltaic
 | :------- | ------------     | ------------  | -------
-| tanh     | 0.44(0.058)      | XXXX          | XXXX
-| softmax  | 0.41(0.049)      | XXXX          | XXXX
+| softmax  | 0.41(0.049)      | 1.17(0.07)    | XXXX
 
-* **Solubility**: `reproduce_delaney.py` Averaged over 5 runs, 8:1:1 for train, validate and test.
+* **Solubility**: `reproduce_delaney.py` 
+* **Drug Efficacy**: `reproduce_drug_efficacy.py` 
+* Averaged over 5 runs, 8:1:1 for train, validate and test.
 
 ## Reproducing Fingerprint Similarity Correlation
 
