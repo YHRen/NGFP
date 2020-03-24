@@ -45,8 +45,8 @@ def mse(x, y):
 
 if __name__ == '__main__':
     BSZ = 128
-    RUNS = 5
-    N_EPOCH = 100
+    RUNS = 10
+    N_EPOCH = 500
     LR = 1e-3
     OUTPUT = './output/best_delaney.pkl'
     DATAFILE = Path('./dataset/solubility/delaney-processed.csv')

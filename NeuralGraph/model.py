@@ -28,6 +28,18 @@ class NeuralFingerPrint(nn.Module):
         fp = self.gop(atoms, bonds, edges)
         return fp
 
+class MLP(nn.Module):
+    def __init__(self, hid_dim, n_class):
+        super(MLP, self).__init__()
+        self.mlp = nn.Sequential(nn.Linear(hid_dim, hid_dim//2),
+                                 nn.ReLU(),
+                                 nn.Linear(hid_dim//2, hid_dim//4),
+                                 nn.ReLU(),
+                                 nn.Linear(hid_dim//4, n_class))
+
+    def forward(self, fp):
+        return self.mlp(fp)
+
 class QSAR(nn.Module):
     def __init__(self, hid_dim, n_class, max_degree=6, \
                  gcn_activation='relu', gop_activation='softmax'):
@@ -35,11 +47,7 @@ class QSAR(nn.Module):
         self.nfp = NeuralFingerPrint(hid_dim, max_degree=max_degree,
                  gcn_activation=gcn_activation, gop_activation=gop_activation)
         # self.bn = nn.BatchNorm2d(80)
-        self.mlp = nn.Sequential(nn.Linear(hid_dim, hid_dim//2),
-                                 nn.ReLU(),
-                                 nn.Linear(hid_dim//2, hid_dim//4),
-                                 nn.ReLU(),
-                                 nn.Linear(hid_dim//4, n_class))
+        self.mlp = MLP(hid_dim, n_class)
         self.to(dev)
 
     def forward(self, atoms, bonds, edges):
