@@ -1,101 +1,21 @@
 # PyTorch Implementation of Neural Graph Fingerprint
 forked from: https://github.com/XuhanLiu/NGFP
 
-* **Update**: change `tanh` to `softmax` in `GraphConvOut` module. (`tanh` causes non-positive "bits" in finger prints)
 ## Reproducing the original paper
+Measured in mean squared error (lower the better)
 
-| Dataset  | Solubility (MSE) | Drug Efficacy | Photovoltaic
-| :------- | ------------     | ------------  | -------
-| softmax  | 0.41(0.049)      | 1.17(0.07)    | XXXX
+| Dataset     | Solubility   | Drug Efficacy | Photovoltaic
+| :---------- | ------------:| -------------:| -----------:
+| This Repo   | 0.43(0.11)   | 1.17(0.07)    | TODO
+| NGF Paper   | 0.52(0.07)   | 1.16(0.03)    | 1.43(0.09)
 
-* **Solubility**: `reproduce_delaney.py` 
-* **Drug Efficacy**: `reproduce_drug_efficacy.py` 
-* Averaged over 5 runs, 8:1:1 for train, validate and test.
+To reproducing these results:
+```
+python reproduce_main_results.py <experiment_name>
+```
+where  `<experiment_name>` should be one of `["solubility", "drug_efficacy", "photovoltaic"]`.
 
 ## Reproducing Fingerprint Similarity Correlation
-
-### Grid search activations for GraphConvNet (gcn) and GraphOutput (gop)
-Gridsaerch of 
-```python
-gcn_act = ['sigmoid', 'relu', 'tanh']
-gop_act = ['sigmoid', 'tanh', 'softmax']
-large_weights = [(-1e7, 1e7), (0, 1e7), (-1e3, 1e3), (-10, 10)]
-max_degs = [1, 6]
-```
-|params                                                             |  correlation
-|------------------------------------------------------------------ |-------------
-|gcn-sigmoid_gop-softmax_weights-(-1000.0, 1000.0)_radius-1         |    0.716294
-|gcn-sigmoid_gop-softmax_weights-(-10000000.0, 10000000.0)_radius-1 |    0.679691
-|gcn-sigmoid_gop-softmax_weights-(0, 10000000.0)_radius-1           |    0.642413
-|gcn-sigmoid_gop-tanh_weights-(-10, 10)_radius-1                    |    0.618465
-|gcn-sigmoid_gop-softmax_weights-(-10, 10)_radius-1                 |    0.612766
-|gcn-sigmoid_gop-sigmoid_weights-(-10000000.0, 10000000.0)_radius-1 |    0.55004
-|gcn-relu_gop-sigmoid_weights-(-10000000.0, 10000000.0)_radius-1    |    0.536428
-|gcn-relu_gop-sigmoid_weights-(-1000.0, 1000.0)_radius-1            |    0.532326
-|gcn-relu_gop-sigmoid_weights-(-10, 10)_radius-1                    |    0.531631
-|gcn-sigmoid_gop-sigmoid_weights-(-10, 10)_radius-1                 |    0.53001
-|gcn-sigmoid_gop-sigmoid_weights-(-1000.0, 1000.0)_radius-1         |    0.529918
-|gcn-relu_gop-tanh_weights-(-10000000.0, 10000000.0)_radius-6       |    0.479653
-|gcn-relu_gop-sigmoid_weights-(-1000.0, 1000.0)_radius-6            |    0.475187
-|gcn-sigmoid_gop-softmax_weights-(-10000000.0, 10000000.0)_radius-6 |    0.47381
-|gcn-relu_gop-sigmoid_weights-(-10000000.0, 10000000.0)_radius-6    |    0.458613
-|gcn-sigmoid_gop-softmax_weights-(-10, 10)_radius-6                 |    0.457012
-|gcn-relu_gop-sigmoid_weights-(-10, 10)_radius-6                    |    0.454613
-|gcn-sigmoid_gop-sigmoid_weights-(-10, 10)_radius-6                 |    0.418538
-|gcn-sigmoid_gop-sigmoid_weights-(-10000000.0, 10000000.0)_radius-6 |    0.406702
-|gcn-sigmoid_gop-sigmoid_weights-(-1000.0, 1000.0)_radius-6         |    0.375891
-|gcn-sigmoid_gop-tanh_weights-(-10000000.0, 10000000.0)_radius-6    |    0.372162
-|gcn-sigmoid_gop-softmax_weights-(-1000.0, 1000.0)_radius-6         |    0.352566
-|gcn-sigmoid_gop-softmax_weights-(0, 10000000.0)_radius-6           |    0.311116
-|gcn-sigmoid_gop-sigmoid_weights-(0, 10000000.0)_radius-1           |    0.295567
-|gcn-sigmoid_gop-sigmoid_weights-(0, 10000000.0)_radius-6           |    0.295567
-|gcn-sigmoid_gop-tanh_weights-(0, 10000000.0)_radius-1              |    0.295567
-|gcn-sigmoid_gop-tanh_weights-(0, 10000000.0)_radius-6              |    0.295567
-|gcn-relu_gop-sigmoid_weights-(0, 10000000.0)_radius-1              |    0.295567
-|gcn-relu_gop-sigmoid_weights-(0, 10000000.0)_radius-6              |    0.295567
-|gcn-relu_gop-tanh_weights-(0, 10000000.0)_radius-1                 |    0.295567
-|gcn-relu_gop-tanh_weights-(0, 10000000.0)_radius-6                 |    0.295567
-|gcn-sigmoid_gop-tanh_weights-(-10, 10)_radius-6                    |    0.261334
-|gcn-sigmoid_gop-tanh_weights-(-1000.0, 1000.0)_radius-6            |    0.2468
-|gcn-sigmoid_gop-tanh_weights-(-1000.0, 1000.0)_radius-1            |    0.194475
-|gcn-relu_gop-tanh_weights-(-10000000.0, 10000000.0)_radius-1       |    0.139468
-|gcn-sigmoid_gop-tanh_weights-(-10000000.0, 10000000.0)_radius-1    |   -0.095261
-|gcn-relu_gop-tanh_weights-(-10, 10)_radius-6                       |  nan
-|gcn-relu_gop-softmax_weights-(-10, 10)_radius-1                    |    0.686585
-|gcn-tanh_gop-softmax_weights-(-10000000.0, 10000000.0)_radius-1    |    0.665152
-|gcn-tanh_gop-softmax_weights-(-10, 10)_radius-1                    |    0.665107
-|gcn-relu_gop-softmax_weights-(0, 10000000.0)_radius-1              |    0.657383
-|gcn-tanh_gop-softmax_weights-(-1000.0, 1000.0)_radius-1            |    0.629601
-|gcn-tanh_gop-softmax_weights-(0, 10000000.0)_radius-1              |    0.604808
-|gcn-relu_gop-softmax_weights-(-1000.0, 1000.0)_radius-6            |    0.581197
-|gcn-relu_gop-softmax_weights-(-1000.0, 1000.0)_radius-1            |    0.572924
-|gcn-relu_gop-tanh_weights-(-1000.0, 1000.0)_radius-6               |    0.565224
-|gcn-relu_gop-softmax_weights-(-10000000.0, 10000000.0)_radius-1    |    0.562611
-|gcn-relu_gop-tanh_weights-(-1000.0, 1000.0)_radius-1               |    0.560201
-|gcn-relu_gop-softmax_weights-(-10, 10)_radius-6                    |    0.550639
-|gcn-tanh_gop-softmax_weights-(0, 10000000.0)_radius-6              |    0.539548
-|gcn-tanh_gop-sigmoid_weights-(-10, 10)_radius-1                    |    0.52877
-|gcn-tanh_gop-sigmoid_weights-(-1000.0, 1000.0)_radius-1            |    0.525169
-|gcn-tanh_gop-sigmoid_weights-(-10000000.0, 10000000.0)_radius-1    |    0.52363
-|gcn-tanh_gop-sigmoid_weights-(-10, 10)_radius-6                    |    0.438762
-|gcn-tanh_gop-sigmoid_weights-(-1000.0, 1000.0)_radius-6            |    0.43075
-|gcn-tanh_gop-softmax_weights-(-10000000.0, 10000000.0)_radius-6    |    0.430058
-|gcn-tanh_gop-softmax_weights-(-10, 10)_radius-6                    |    0.424098
-|gcn-tanh_gop-sigmoid_weights-(-10000000.0, 10000000.0)_radius-6    |    0.421994
-|gcn-relu_gop-softmax_weights-(-10000000.0, 10000000.0)_radius-6    |    0.363453
-|gcn-tanh_gop-softmax_weights-(-1000.0, 1000.0)_radius-6            |    0.345484
-|gcn-tanh_gop-tanh_weights-(-1000.0, 1000.0)_radius-6               |    0.340882
-|gcn-tanh_gop-tanh_weights-(-1000.0, 1000.0)_radius-1               |    0.320849
-|gcn-relu_gop-softmax_weights-(0, 10000000.0)_radius-6              |    0.295567
-|gcn-tanh_gop-sigmoid_weights-(0, 10000000.0)_radius-1              |    0.295567
-|gcn-tanh_gop-sigmoid_weights-(0, 10000000.0)_radius-6              |    0.295567
-|gcn-tanh_gop-tanh_weights-(0, 10000000.0)_radius-1                 |    0.295567
-|gcn-tanh_gop-tanh_weights-(0, 10000000.0)_radius-6                 |    0.295567
-|gcn-tanh_gop-tanh_weights-(-10000000.0, 10000000.0)_radius-6       |    0.240071
-|gcn-tanh_gop-tanh_weights-(-10, 10)_radius-1                       |    0.229624
-|gcn-tanh_gop-tanh_weights-(-10000000.0, 10000000.0)_radius-1       |    0.209503
-|gcn-relu_gop-tanh_weights-(-10, 10)_radius-1                       |    0.0741423
-|gcn-tanh_gop-tanh_weights-(-10, 10)_radius-6                       |   -0.0714465
 
 # Convolutional Neural Graph Fingerprint
 PyTorch-based Neural Graph Fingerprint for Organic Molecule Representations
@@ -189,3 +109,91 @@ is no longer a dependency.
 [4]: https://github.com/ericmjl/graph-fingerprint
 [5]: https://github.com/deepchem/deepchem
 [6]: https://github.com/keiserlab/keras-neural-graph-fingerprint
+
+
+
+
+<!---
+### Grid search activations for GraphConvNet (gcn) and GraphOutput (gop)
+Gridsaerch of 
+```python
+gcn_act = ['sigmoid', 'relu', 'tanh']
+gop_act = ['sigmoid', 'tanh', 'softmax']
+large_weights = [(-1e7, 1e7), (0, 1e7), (-1e3, 1e3), (-10, 10)]
+max_degs = [1, 6]
+```
+|params                                                             |  correlation
+|------------------------------------------------------------------ |-------------
+|gcn-sigmoid_gop-softmax_weights-(-1000.0, 1000.0)_radius-1         |    0.716294
+|gcn-sigmoid_gop-softmax_weights-(-10000000.0, 10000000.0)_radius-1 |    0.679691
+|gcn-sigmoid_gop-softmax_weights-(0, 10000000.0)_radius-1           |    0.642413
+|gcn-sigmoid_gop-tanh_weights-(-10, 10)_radius-1                    |    0.618465
+|gcn-sigmoid_gop-softmax_weights-(-10, 10)_radius-1                 |    0.612766
+|gcn-sigmoid_gop-sigmoid_weights-(-10000000.0, 10000000.0)_radius-1 |    0.55004
+|gcn-relu_gop-sigmoid_weights-(-10000000.0, 10000000.0)_radius-1    |    0.536428
+|gcn-relu_gop-sigmoid_weights-(-1000.0, 1000.0)_radius-1            |    0.532326
+|gcn-relu_gop-sigmoid_weights-(-10, 10)_radius-1                    |    0.531631
+|gcn-sigmoid_gop-sigmoid_weights-(-10, 10)_radius-1                 |    0.53001
+|gcn-sigmoid_gop-sigmoid_weights-(-1000.0, 1000.0)_radius-1         |    0.529918
+|gcn-relu_gop-tanh_weights-(-10000000.0, 10000000.0)_radius-6       |    0.479653
+|gcn-relu_gop-sigmoid_weights-(-1000.0, 1000.0)_radius-6            |    0.475187
+|gcn-sigmoid_gop-softmax_weights-(-10000000.0, 10000000.0)_radius-6 |    0.47381
+|gcn-relu_gop-sigmoid_weights-(-10000000.0, 10000000.0)_radius-6    |    0.458613
+|gcn-sigmoid_gop-softmax_weights-(-10, 10)_radius-6                 |    0.457012
+|gcn-relu_gop-sigmoid_weights-(-10, 10)_radius-6                    |    0.454613
+|gcn-sigmoid_gop-sigmoid_weights-(-10, 10)_radius-6                 |    0.418538
+|gcn-sigmoid_gop-sigmoid_weights-(-10000000.0, 10000000.0)_radius-6 |    0.406702
+|gcn-sigmoid_gop-sigmoid_weights-(-1000.0, 1000.0)_radius-6         |    0.375891
+|gcn-sigmoid_gop-tanh_weights-(-10000000.0, 10000000.0)_radius-6    |    0.372162
+|gcn-sigmoid_gop-softmax_weights-(-1000.0, 1000.0)_radius-6         |    0.352566
+|gcn-sigmoid_gop-softmax_weights-(0, 10000000.0)_radius-6           |    0.311116
+|gcn-sigmoid_gop-sigmoid_weights-(0, 10000000.0)_radius-1           |    0.295567
+|gcn-sigmoid_gop-sigmoid_weights-(0, 10000000.0)_radius-6           |    0.295567
+|gcn-sigmoid_gop-tanh_weights-(0, 10000000.0)_radius-1              |    0.295567
+|gcn-sigmoid_gop-tanh_weights-(0, 10000000.0)_radius-6              |    0.295567
+|gcn-relu_gop-sigmoid_weights-(0, 10000000.0)_radius-1              |    0.295567
+|gcn-relu_gop-sigmoid_weights-(0, 10000000.0)_radius-6              |    0.295567
+|gcn-relu_gop-tanh_weights-(0, 10000000.0)_radius-1                 |    0.295567
+|gcn-relu_gop-tanh_weights-(0, 10000000.0)_radius-6                 |    0.295567
+|gcn-sigmoid_gop-tanh_weights-(-10, 10)_radius-6                    |    0.261334
+|gcn-sigmoid_gop-tanh_weights-(-1000.0, 1000.0)_radius-6            |    0.2468
+|gcn-sigmoid_gop-tanh_weights-(-1000.0, 1000.0)_radius-1            |    0.194475
+|gcn-relu_gop-tanh_weights-(-10000000.0, 10000000.0)_radius-1       |    0.139468
+|gcn-sigmoid_gop-tanh_weights-(-10000000.0, 10000000.0)_radius-1    |   -0.095261
+|gcn-relu_gop-tanh_weights-(-10, 10)_radius-6                       |  nan
+|gcn-relu_gop-softmax_weights-(-10, 10)_radius-1                    |    0.686585
+|gcn-tanh_gop-softmax_weights-(-10000000.0, 10000000.0)_radius-1    |    0.665152
+|gcn-tanh_gop-softmax_weights-(-10, 10)_radius-1                    |    0.665107
+|gcn-relu_gop-softmax_weights-(0, 10000000.0)_radius-1              |    0.657383
+|gcn-tanh_gop-softmax_weights-(-1000.0, 1000.0)_radius-1            |    0.629601
+|gcn-tanh_gop-softmax_weights-(0, 10000000.0)_radius-1              |    0.604808
+|gcn-relu_gop-softmax_weights-(-1000.0, 1000.0)_radius-6            |    0.581197
+|gcn-relu_gop-softmax_weights-(-1000.0, 1000.0)_radius-1            |    0.572924
+|gcn-relu_gop-tanh_weights-(-1000.0, 1000.0)_radius-6               |    0.565224
+|gcn-relu_gop-softmax_weights-(-10000000.0, 10000000.0)_radius-1    |    0.562611
+|gcn-relu_gop-tanh_weights-(-1000.0, 1000.0)_radius-1               |    0.560201
+|gcn-relu_gop-softmax_weights-(-10, 10)_radius-6                    |    0.550639
+|gcn-tanh_gop-softmax_weights-(0, 10000000.0)_radius-6              |    0.539548
+|gcn-tanh_gop-sigmoid_weights-(-10, 10)_radius-1                    |    0.52877
+|gcn-tanh_gop-sigmoid_weights-(-1000.0, 1000.0)_radius-1            |    0.525169
+|gcn-tanh_gop-sigmoid_weights-(-10000000.0, 10000000.0)_radius-1    |    0.52363
+|gcn-tanh_gop-sigmoid_weights-(-10, 10)_radius-6                    |    0.438762
+|gcn-tanh_gop-sigmoid_weights-(-1000.0, 1000.0)_radius-6            |    0.43075
+|gcn-tanh_gop-softmax_weights-(-10000000.0, 10000000.0)_radius-6    |    0.430058
+|gcn-tanh_gop-softmax_weights-(-10, 10)_radius-6                    |    0.424098
+|gcn-tanh_gop-sigmoid_weights-(-10000000.0, 10000000.0)_radius-6    |    0.421994
+|gcn-relu_gop-softmax_weights-(-10000000.0, 10000000.0)_radius-6    |    0.363453
+|gcn-tanh_gop-softmax_weights-(-1000.0, 1000.0)_radius-6            |    0.345484
+|gcn-tanh_gop-tanh_weights-(-1000.0, 1000.0)_radius-6               |    0.340882
+|gcn-tanh_gop-tanh_weights-(-1000.0, 1000.0)_radius-1               |    0.320849
+|gcn-relu_gop-softmax_weights-(0, 10000000.0)_radius-6              |    0.295567
+|gcn-tanh_gop-sigmoid_weights-(0, 10000000.0)_radius-1              |    0.295567
+|gcn-tanh_gop-sigmoid_weights-(0, 10000000.0)_radius-6              |    0.295567
+|gcn-tanh_gop-tanh_weights-(0, 10000000.0)_radius-1                 |    0.295567
+|gcn-tanh_gop-tanh_weights-(0, 10000000.0)_radius-6                 |    0.295567
+|gcn-tanh_gop-tanh_weights-(-10000000.0, 10000000.0)_radius-6       |    0.240071
+|gcn-tanh_gop-tanh_weights-(-10, 10)_radius-1                       |    0.229624
+|gcn-tanh_gop-tanh_weights-(-10000000.0, 10000000.0)_radius-1       |    0.209503
+|gcn-relu_gop-tanh_weights-(-10, 10)_radius-1                       |    0.0741423
+|gcn-tanh_gop-tanh_weights-(-10, 10)_radius-6                       |   -0.0714465
+--->
