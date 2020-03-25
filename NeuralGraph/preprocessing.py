@@ -28,7 +28,7 @@ def padaxis(array, new_size, axis, pad_value=0, pad_right=True):
     return np.pad(array, pad_width=pad_width, mode='constant', constant_values=pad_value)
 
 
-def tensorise_smiles(smiles, max_degree=5, max_atoms=None):
+def tensorise_smiles(smiles, max_degree=5, max_atoms=None, use_tqdm=False):
     """Takes a list of smiles and turns the graphs in tensor representation.
     # Arguments:
         smiles: a list (or iterable) of smiles representations
@@ -62,7 +62,8 @@ def tensorise_smiles(smiles, max_degree=5, max_atoms=None):
     bond_tensor = np.zeros((n, max_atoms or 1, max_degree or 1, n_bond_features))
     edge_tensor = -np.ones((n, max_atoms or 1, max_degree or 1), dtype=int)
 
-    for mol_ix, s in enumerate(tqdm(smiles)):
+    if use_tqdm: smiles=tqdm(smiles)
+    for mol_ix, s in enumerate(smiles):
         mol = Chem.MolFromSmiles(s)
         atoms = mol.GetAtoms()
         bonds = mol.GetBonds()

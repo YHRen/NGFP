@@ -15,7 +15,21 @@ python reproduce_main_results.py <experiment_name>
 ```
 where  `<experiment_name>` should be one of `["solubility", "drug_efficacy", "photovoltaic"]`.
 
-## Reproducing Fingerprint Similarity Correlation
+## Calculating the Similarity between two SMILE strings
+`smile_similarity.py` takes two SMILE strings, compute their fingerprints and calculate the similarity.
+Two fingerprinting methods are implemented: "morgan" and "nfp" (neural fingerprint)
+If a model pkg file is not provided, the "nfp" will uses large random weights as described in the original paper.
+
+Here is an example:
+
+```bash
+#!/bin/bash
+s1="C1OC(O)C(O)C(O)C1O"
+s2="CC(C)=CCCC(C)=CC(=O)"
+python measure_smile_distance.py $s1 $s2 -m morgan
+python measure_smile_distance.py $s1 $s2 -m nfp
+python measure_smile_distance.py $s1 $s2 -m nfp --model './output/best_delaney.pkl.pkg'
+```
 
 # Convolutional Neural Graph Fingerprint
 PyTorch-based Neural Graph Fingerprint for Organic Molecule Representations

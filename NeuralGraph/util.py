@@ -1,5 +1,7 @@
 import torch as T
 import numpy as np
+import torch.nn as nn
+from rdkit import Chem, DataStructs
 dev = T.device('cuda') if T.cuda.is_available() else T.device('cpu')
 
 
@@ -51,3 +53,54 @@ def lookup_neighbors(atoms, edges, maskvalue=0, include_self=False):
     if include_self:
         return T.cat([atoms.view(batch_n, max_atoms, 1, n_atom_features), output], dim=2)
     return output
+
+
+def tanimoto_distance(x, y):
+    idx = x<=y
+    return 1 - (x[idx].sum() + y[~idx].sum()) / (x[~idx].sum() + y[idx].sum())
+
+
+def calc_circular_fp(smile, radius=6, fp_len=128):
+    """
+    Morgan algorithm
+    """
+    mol = Chem.MolFromSmiles(smile)
+    fingerprint = Chem.AllChem.GetMorganFingerprintAsBitVect(mol, radius, fp_len)
+    arr = np.zeros((1,))
+    DataStructs.ConvertToNumpyArray(fingerprint, arr)
+    return arr
+
+def calc_neural_fp(X, net):
+    x0, x1, x2 = X
+    x0, x1, x2 = x0.to(dev), x1.to(dev), x2.to(dev)
+    if len(x0.shape) == 2: 
+        x0, x1, x2 = (T.unsqueeze(x, 0) for x in (x0, x1, x2))
+    res = net.nfp(x0, x1, x2)
+    res = res.detach().cpu().numpy()
+    return res
+
+def enlarge_weights(net, lo_bnd, hi_bnd):
+    for n,m in net.named_children():
+        if isinstance(m, T.nn.Linear):
+            nn.init.uniform_(m.weight, lo_bnd, hi_bnd)
+            if m.bias is not None:
+                nn.init.uniform_(m.bias, lo_bnd, hi_bnd)
+        enlarge_weights(m, lo_bnd, hi_bnd)
+
+
+def calc_distance(net, data, smiles, FP_LEN,\
+                    sample_sz=1000, SEED=None):
+    N, sample_sz = len(data), sample_sz
+    if SEED: np.random.seed(SEED)
+    res = [[],[]]
+    for _ in range(sample_sz):
+        i, j = np.random.choice(N, 2)
+        dst0 = tanimoto_distance(get_circular_fp(smiles[i], fp_len=FP_LEN),
+                                 get_circular_fp(smiles[j], fp_len=FP_LEN))
+        dst1 = tanimoto_distance(get_neural_fp(data[i][0], net),
+                                 get_neural_fp(data[j][0], net))
+        res[0].append(dst0)
+        res[1].append(dst1)
+
+    res = np.asarray(res)
+    return res

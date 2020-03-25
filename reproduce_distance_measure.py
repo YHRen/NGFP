@@ -90,6 +90,10 @@ if __name__ == '__main__':
     target = df['measured log solubility in mols per litre'].values
     target, restore = normalize_array(target)
     data = MolData(df['smiles'], target)
+    print(type(df['smiles'][0]), df['smiles'][0])
+    tmp = df['smiles'][0]
+    print(get_circular_fp(tmp))
+    exit()
 
     # Plot with a random weight and 2048 length as in Figure3Left
     gcn_act = ['sigmoid', 'relu', 'tanh']
