@@ -1,7 +1,25 @@
 # PyTorch Implementation of Neural Graph Fingerprint
 forked from: https://github.com/XuhanLiu/NGFP
 
-## Reproducing the original paper
+
+## Calculate similarity between two SMILE strings
+`smile_similarity.py` takes two SMILE strings, compute their fingerprints and calculate the similarity.
+Two fingerprinting methods are implemented: "morgan" and "nfp" (neural fingerprint)
+If a model pkg file is not provided, the "nfp" will uses large random weights as described in the original paper.
+The similarity is defined as one minus continuous Tanimoto distance.
+
+Here is an example:
+
+```bash
+#!/bin/bash
+s1="C1OC(O)C(O)C(O)C1O"
+s2="CC(C)=CCCC(C)=CC(=O)"
+python measure_smile_distance.py $s1 $s2 -m morgan
+python measure_smile_distance.py $s1 $s2 -m nfp
+python measure_smile_distance.py $s1 $s2 -m nfp --model './output/best_delaney.pkl.pkg'
+```
+
+## Reproduce results in the original paper
 Measured in mean squared error (lower the better)
 
 | Dataset     | Solubility   | Drug Efficacy | Photovoltaic
@@ -15,21 +33,6 @@ python reproduce_main_results.py <experiment_name>
 ```
 where  `<experiment_name>` should be one of `["solubility", "drug_efficacy", "photovoltaic"]`.
 
-## Calculating the Similarity between two SMILE strings
-`smile_similarity.py` takes two SMILE strings, compute their fingerprints and calculate the similarity.
-Two fingerprinting methods are implemented: "morgan" and "nfp" (neural fingerprint)
-If a model pkg file is not provided, the "nfp" will uses large random weights as described in the original paper.
-
-Here is an example:
-
-```bash
-#!/bin/bash
-s1="C1OC(O)C(O)C(O)C1O"
-s2="CC(C)=CCCC(C)=CC(=O)"
-python measure_smile_distance.py $s1 $s2 -m morgan
-python measure_smile_distance.py $s1 $s2 -m nfp
-python measure_smile_distance.py $s1 $s2 -m nfp --model './output/best_delaney.pkl.pkg'
-```
 
 # Convolutional Neural Graph Fingerprint
 PyTorch-based Neural Graph Fingerprint for Organic Molecule Representations
