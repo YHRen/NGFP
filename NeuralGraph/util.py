@@ -2,6 +2,7 @@ import torch as T
 import numpy as np
 import torch.nn as nn
 from rdkit import Chem, DataStructs
+from rdkit.Chem import AllChem
 dev = T.device('cuda') if T.cuda.is_available() else T.device('cpu')
 
 
@@ -65,7 +66,7 @@ def calc_circular_fp(smile, radius=6, fp_len=128):
     Morgan algorithm
     """
     mol = Chem.MolFromSmiles(smile)
-    fingerprint = Chem.AllChem.GetMorganFingerprintAsBitVect(mol, radius, fp_len)
+    fingerprint = AllChem.GetMorganFingerprintAsBitVect(mol, radius, fp_len)
     arr = np.zeros((1,))
     DataStructs.ConvertToNumpyArray(fingerprint, arr)
     return arr

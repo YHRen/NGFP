@@ -14,24 +14,27 @@ Here is an example:
 #!/bin/bash
 s1="C1OC(O)C(O)C(O)C1O"
 s2="CC(C)=CCCC(C)=CC(=O)"
-python measure_smile_distance.py $s1 $s2 -m morgan
-python measure_smile_distance.py $s1 $s2 -m nfp
-python measure_smile_distance.py $s1 $s2 -m nfp --model './output/best_delaney.pkl.pkg'
+python smile_similarity.py $s1 $s2 -m morgan
+python smile_similarity.py $s1 $s2 -m nfp
+python smile_similarity.py $s1 $s2 -m nfp --model './output/best_delaney.pkl.pkg'
 ```
 
 ## Reproduce results in the original paper
 Measured in mean squared error (lower the better)
 
-| Dataset     | Solubility   | Drug Efficacy | Photovoltaic
-| :---------- | ------------:| -------------:| -----------:
-| This Repo   | 0.43(0.11)   | 1.17(0.07)    | TODO
-| NGF Paper   | 0.52(0.07)   | 1.16(0.03)    | 1.43(0.09)
+| Dataset             | Solubility    | Drug Efficacy  | Photovoltaic
+| :----------         | ------------: | -------------: | -----------:
+| This repo (NFP+MLP) | 0.34(0.02)    | 1.07(0.10)     | 1.08(0.06)
+| NGF Paper           | 0.52(0.07)    | 1.16(0.03)     | 1.43(0.09)
+| This repo (CFP+MLP) | 1.35(0.18)    | 1.13(0.03)     | 1.84(0.10)
+| NGF Paper           | 1.40(0.13)    | 1.36(0.10)     | 2.00(0.09)
 
 To reproducing these results:
 ```
-python reproduce_main_results.py <experiment_name>
+python reproduce_main_results.py <experiment_name> <method_name>
 ```
-where  `<experiment_name>` should be one of `["solubility", "drug_efficacy", "photovoltaic"]`.
+where  `<experiment_name>` should be one of `["solubility", "drug_efficacy",
+"photovoltaic"]`, and `<method_name>` is either `["morgan", "nfp"]`.
 
 
 # Convolutional Neural Graph Fingerprint
