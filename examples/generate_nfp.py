@@ -69,5 +69,4 @@ if __name__ == "__main__":
 
 
     res = np.concatenate(res)
-    res = np.float(res)
     np.save(args.output, res)

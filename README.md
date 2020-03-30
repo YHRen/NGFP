@@ -12,7 +12,7 @@ PyTorch, RDkit, tqdm, numpy
 python examples/generate_nfp.py --datafile <datafile.smi> \
                                 --model <saved_trained_model> \
                                 --output <output_nfp.npy> 
-python examples/generate_nfp.py --datafile ./dataset/zinc/6_p2.smi \
+python examples/generate_nfp.py --datafile ./dataset/zinc/zinc_sample.smi \
                                 --model ./output/best_efficacy.pkl.pkg \
                                 --output ./output/example_nfp_output.npy
 ```
