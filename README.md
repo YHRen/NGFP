@@ -16,17 +16,18 @@ python examples/generate_nfp.py --datafile ./dataset/zinc/6_p2.smi \
                                 --model ./output/best_efficacy.pkl.pkg \
                                 --output ./output/example_nfp_output.npy
 ```
+
 Each line in `<datafile.smi>` contains a smile string and additional
 information. We assume the first column is the smile strings and columns are
 space (or tab) separated. If not the case, one can pass the delimiter and
 column index of the smile string as `--delimiter "," --column_index 2` for
 example. (see function `line_parser()` in `generate_nfp.py` for more details.
 
-Different from BitVec fingerprints from Morgan algorithm, the NFP is a vector
-of non-negative real values.  The length of NFP is defined by the trained
-model (128 in the example). To change the NFP length, One need to redefine a 
-NFP network and re-train the model. (see `reproduce_main_results.py` for more
-details.)
+Different from fingerprints as bit vectors from the Morgan algorithm, the NFP
+is represented by a vector of non-negative real values.  The length of NFP is
+defined by the trained model's hidden dimension (128 in the example). To change
+the NFP length, One need to redefine a NFP network and re-train the model. (see
+`reproduce_main_results.py` for more details.)
 
 ### Compute continuous Tanimoto Similarity
 
@@ -37,7 +38,7 @@ Compute the continuous Tanimoto similarity, defined in the NFP paper:
 
 ![\sum_i \min(X_i, Y_i) / \sum_i \max(X_i, Y_i)](https://render.githubusercontent.com/render/math?math=%5Csum_i%20%5Cmin(X_i%2C%20Y_i)%20%2F%20%5Csum_i%20%5Cmax(X_i%2C%20Y_i))
 
-The function `tanimoto_similarity is defined in `NeuralGraph/util.py`. It takes
+The function `tanimoto_similarity(X,Y)` is defined in `NeuralGraph/util.py`. It takes
 two variables `x` and `y`: `x` must be a single fingerprint of length `L`, and `y` can be
 either one fingerprint `(L,)` or an array of `M` fingerprints, `(M,L)`.
 
