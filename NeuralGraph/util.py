@@ -56,9 +56,21 @@ def lookup_neighbors(atoms, edges, maskvalue=0, include_self=False):
     return output
 
 
+def tanimoto_similarity(x, y):
+    """ calculate the continuous tanimoto similarity
+    ______
+    Input:
+        x : a fingerprint of a numpy array of size n
+        y : 1) a fingerprint or 2) a vector of fingerprints. 
+    ______
+    Output:
+        z : 1) a value of similarity or 2) a vector of similarities
+    """
+    return np.minimum(x,y).sum(-1)/np.maximum(x,y).sum(-1)
+
+
 def tanimoto_distance(x, y):
-    idx = x<=y
-    return 1 - (x[idx].sum() + y[~idx].sum()) / (x[~idx].sum() + y[idx].sum())
+    return 1 - tanimoto_similarity(x,y)
 
 
 def calc_circular_fp(smile, radius=6, fp_len=128):

@@ -4,7 +4,8 @@ from .layer import GraphConv, GraphPool, GraphOutput
 import numpy as np
 from torch import optim
 import time
-from .util import dev
+from .util import dev, calc_neural_fp
+from .preprocessing import tensorise_smiles
 
 class NeuralFingerPrint(nn.Module):
     def __init__(self, hid_dim, max_degree=6,\
@@ -151,3 +152,44 @@ class QSAR(nn.Module):
             score.append(y_.data.cpu())
         score = T.cat(score, dim=0).numpy()
         return score
+
+    def calc_nfp(self, smiles, is_float16=True):
+        """ Calculate the neural fingerprint (nfp) based on the current neural
+        network.
+
+        input:
+
+        smiles: a list of SMILE strings of size **n**. 
+        
+        
+        output:
+
+            a numpy matrix of floats of dimension **n-by-hid_dim**, where
+            **hid_dim** is the length of nfp.
+            
+
+        NOTE: make sure the SMILE strings can be fitted into the GPU memory.
+
+        Example:
+
+        net = torch.load("<saved_model_file>")
+        res = []
+        bsz = 256
+        with open('./dataset.smiles','r') as fp:
+            cnt, cache = 0, []
+            for line in fp:
+                if cnt < bsz:
+                    cache.append(line)
+                    cnt += 1
+                else:
+                    res.append(net.calc_nfp(cache))
+                    cnt, cache = 0, []
+            if len(cache) > 0:
+                res.append(net.calc_nfp(cache))
+        """
+        tmp = tensorise_smiles(smiles)
+        res = calc_neural_fp(tmp, self)
+        if is_float16:
+            res = np.float16(res)
+        return res
+
