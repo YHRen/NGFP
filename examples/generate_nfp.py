@@ -42,7 +42,7 @@ if __name__ == "__main__":
     parser.add_argument("--delimiter", help="choose the delimiter of the smi\
                         file", type=str, default=" ")
     parser.add_argument("--column_index", help="choose the column_index of\
-                        the smile strings.e", type=int, default=0)
+                        the smile strings.", type=int, default=0)
     parser.add_argument("--model", help="choose the saved model file for nfp\
                         method. If not specified, large random weights would\
                         be used", type=str, required=True)

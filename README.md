@@ -32,7 +32,7 @@ the NFP length, One need to redefine a NFP network and re-train the model. (see
 ### Compute continuous Tanimoto Similarity
 
 ```python
-python examples/compute_tanimoto.py
+> python examples/compute_tanimoto.py -h
 ```
 Compute the continuous Tanimoto similarity, defined in the NFP paper:
 
@@ -41,6 +41,28 @@ Compute the continuous Tanimoto similarity, defined in the NFP paper:
 The function `tanimoto_similarity(x,y)` is defined in `NeuralGraph/util.py`. It takes
 two variables `x` and `y`: `x` must be a single fingerprint of length `L`, and `y` can be
 either one fingerprint `(L,)` or an array of `M` fingerprints, `(M,L)`.
+
+Here is an example output from the fingerprints we generated in the previous example.
+
+```python
+> python examples/compute_tanimoto.py --datafile dataset/zinc/zinc_sample.smi \
+                                      --fingerprint output/example_nfp_output.npy \
+                                      --top_k 10 --anchor_smile_idx 15
+
+top-10 similar smiles to C[C@H](CCc1ccccc1)[NH2+]C[C@H](c2ccc(c(c2)C(=O)N)[O-])O
+smiles                                                       score
+--------------------------------------------------------  --------
+C[C@H](CCc1ccccc1)[NH2+]C[C@@H](c2ccc(c(c2)C(=O)N)[O-])O  1
+COc1ccc(c(c1)[O-])C(=O)NC[C@@H]2c3ccccc3CCO2              0.692871
+COc1ccc(c(c1)[O-])C(=O)NC[C@H]2c3ccccc3CCO2               0.692871
+Cc1cc(nc2c1cccc2)N3C[C@@H](O[C@H](C3)C)C                  0.6875
+Cc1cc(nc2c1cccc2)N3C[C@H](O[C@@H](C3)C)C                  0.6875
+c1ccc2c(c1)CC(=C2)N3CCN(CC3)c4cccc(c4)C(F)(F)F            0.644531
+Cc1cc(ccc1OC)CCCC(=O)N/N=C/c2ccccc2[O-]                   0.64209
+COc1ccc(c(c1)[O-])C(=O)Cc2cnn(c2)c3ccccc3                 0.634766
+CCC(=O)c1ccc2c(c1)N(c3ccccc3S2)C[C@H](C)N(C)C             0.634766
+c1ccc(cc1)COCc2cnc([nH]c2=O)[O-]                          0.633789
+```
 
 
 ## Calculate similarity between two SMILE strings
