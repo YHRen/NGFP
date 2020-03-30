@@ -1,6 +1,9 @@
 # PyTorch Implementation of Neural Graph Fingerprint
 forked from: https://github.com/XuhanLiu/NGFP
 
+## Required Packages:
+PyTorch, RDkit, tqdm, numpy
+
 ## Examples: 
 
 ### Generate Neural Fingerprint (NFP) using a trained model
@@ -31,6 +34,7 @@ details.)
 python examples/compute_tanimoto.py
 ```
 Compute the continuous Tanimoto similarity, defined in the NFP paper:
+
 ![\sum_i \min(X_i, Y_i) / \sum_i \max(X_i, Y_i)](https://render.githubusercontent.com/render/math?math=%5Csum_i%20%5Cmin(X_i%2C%20Y_i)%20%2F%20%5Csum_i%20%5Cmax(X_i%2C%20Y_i))
 
 The function `tanimoto_similarity is defined in `NeuralGraph/util.py`. It takes
