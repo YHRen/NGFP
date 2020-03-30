@@ -38,7 +38,7 @@ Compute the continuous Tanimoto similarity, defined in the NFP paper:
 
 ![\sum_i \min(X_i, Y_i) / \sum_i \max(X_i, Y_i)](https://render.githubusercontent.com/render/math?math=%5Csum_i%20%5Cmin(X_i%2C%20Y_i)%20%2F%20%5Csum_i%20%5Cmax(X_i%2C%20Y_i))
 
-The function `tanimoto_similarity(X,Y)` is defined in `NeuralGraph/util.py`. It takes
+The function `tanimoto_similarity(x,y)` is defined in `NeuralGraph/util.py`. It takes
 two variables `x` and `y`: `x` must be a single fingerprint of length `L`, and `y` can be
 either one fingerprint `(L,)` or an array of `M` fingerprints, `(M,L)`.
 
