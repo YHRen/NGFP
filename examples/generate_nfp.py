@@ -53,16 +53,15 @@ if __name__ == "__main__":
     net = try_load_net(args.model)
     dmt, idx = args.delimiter, args.column_index
     res = []
-    bsz = 1<<12
+    bsz = 1<<11
     with open(args.datafile,'r') as fp:
         osc, cache = oscillator(bsz), []
         for line in tqdm(fp):
             if osc():
                 res.append(net.calc_nfp(cache))
                 cache = []
-            else:
-                sml = line_parser(line, dmt=dmt, idx=idx)
-                cache.append(sml)
+            sml = line_parser(line, dmt=dmt, idx=idx)
+            cache.append(sml)
 
         if len(cache) > 0:
            res.append(net.calc_nfp(cache))
