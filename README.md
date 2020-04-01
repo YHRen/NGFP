@@ -4,6 +4,10 @@ forked from: https://github.com/XuhanLiu/NGFP
 ## Required Packages:
 PyTorch, RDkit, tqdm, numpy
 
+```
+> conda install -c conda-forge rdkit
+```
+
 ## Examples: 
 
 ### Generate Neural Fingerprint (NFP) using a trained model
