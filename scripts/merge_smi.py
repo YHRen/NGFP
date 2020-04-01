@@ -37,7 +37,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     df = merge_smi(args)
-    if args.format == "csv":
+    if args.output.endwith("csv"):
+        df.to_csv(args.output)
+    elif args.output.endwith("pkl"):
+        df.to_pickle(args.output)
+    elif args.format == "csv":
         df.to_csv(args.output+".csv")
     elif args.format == "pkl":
         df.to_pickle(args.output+".pkl")
+    else:
+        raise NotImplementedError
