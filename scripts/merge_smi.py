@@ -27,11 +27,9 @@ if __name__ == '__main__':
     """ merge all pockets with the same protein name"""
     parser = argparse.ArgumentParser()
     parser.add_argument("directory",  type=str,
-                        help="Specify the directory name",
-                        required=True)
+                        help="Specify the directory name")
     parser.add_argument("protein", type=str,
-                        help="Specify the protein name",
-                        required=True)
+                        help="Specify the protein name")
     parser.add_argument("-o", "--output", help="output file name")
     parser.add_argument("--format", help="output format",
                         default='csv',
