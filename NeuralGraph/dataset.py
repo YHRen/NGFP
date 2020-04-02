@@ -10,14 +10,17 @@ from . import util
 
 class MolData(Dataset):
     """Custom PyTorch Dataset that takes a file containing \n separated SMILES"""
-    def __init__(self, smiles, labels):
+    def __init__(self, smiles, labels, use_tqdm=False):
         self.max_atom = 80
         self.max_degree = 6
-        self.atoms, self.bonds, self.edges = self._featurize(smiles)
+        self.atoms, self.bonds, self.edges = self._featurize(smiles,
+                                                             use_tqdm=use_tqdm)
         self.label = T.from_numpy(labels).float()
 
-    def _featurize(self, smiles):
-        return prep.tensorise_smiles(smiles, max_atoms=self.max_atom, max_degree=self.max_degree)
+    def _featurize(self, smiles, use_tqdm=False):
+        return prep.tensorise_smiles(smiles, max_atoms=self.max_atom,
+                                     max_degree=self.max_degree,
+                                     use_tqdm=use_tqdm)
 
     def __getitem__(self, i):
         return (self.atoms[i], self.bonds[i], self.edges[i]), self.label[i]

@@ -34,8 +34,19 @@ def load_csv(data_file, target_name, dem=","):
     return df['smiles'], df[target_name].values
 
 
-def mse(x, y):
-    return ((x-y)**2).mean()
+def load_multiclass_csv(data_file, dem=",", sample=None):
+    df = pd.read_csv(data_file, delimiter=dem)
+    df = df.drop(columns=["Unnamed: 0", "name"]) # error handling
+    df = df.set_index('smiles')
+    df = df.apply(pd.to_numeric, errors='coerce')
+    df = df.dropna()
+    if sample is not None:
+        df = df.sample(sample) if isinstance(sample,int) else df.sample(frac=sample)
+    return df.index, df.values, df.columns
+
+
+def mse(x, y, dim=None):
+    return ((x-y)**2).mean(dim)
 
 
 def main(args):
@@ -44,24 +55,24 @@ def main(args):
     DATAFILE = Path(args.datafile)
     assert DATAFILE.exists()
     OUTPUT = args.output_dir+DATAFILE.stem+".pkl"
-    SMILES, TARGET = load_csv(DATAFILE, "reg", dem=args.delimiter)
-
-    NET = None
-    if args.fp_method == FP_METHODS[0]:
-        NET = lambda : MLP(hid_dim=FP_LEN, n_class=1)
-    elif args.fp_method == FP_METHODS[1]:
-        NET = lambda : QSAR(hid_dim=128, n_class=1)
+    if args.multiclass:
+        SMILES, TARGET, KEYS = load_multiclass_csv(DATAFILE, dem=args.delimiter,
+                                               sample=args.sample)
+        print(f"column names {DATAFILE.stem}: {KEYS}")
+    else:
+        SMILES, TARGET = load_csv(DATAFILE, "reg", dem=args.delimiter)
+    NCLASS = len(SMILES)
 
     def build_data_net(args, target):
         if args.fp_method == FP_METHODS[0]:
             #""" CFP """
             data = SmileData(SMILES, target, fp_len=FP_LEN, radius=4)
-            net = lambda : MLP(hid_dim=FP_LEN, n_class=1)
+            net = lambda : MLP(hid_dim=FP_LEN, n_class=NCLASS)
             return data, net
         elif args.fp_method == FP_METHODS[1]: 
             #""" NFP """
-            net = lambda : QSAR(hid_dim=128, n_class=1)
-            data = MolData(SMILES, target)
+            net = lambda : QSAR(hid_dim=128, n_class=NCLASS)
+            data = MolData(SMILES, target, use_tqdm=args.use_tqdm)
             return data, net
         else:
             raise NotImplementedError
@@ -75,9 +86,9 @@ def main(args):
         target = norm_func(TARGET)
         data, net = build_data_net(args, target)
         train_loader = DataLoader(Subset(data, train_idx), batch_size=BSZ,
-                                  shuffle=True, drop_last=True)
+                                  shuffle=True, drop_last=True, pin_memory=True)
         valid_loader = DataLoader(Subset(data, valid_idx), batch_size=BSZ,
-                                  shuffle=False)
+                                  shuffle=False, pin_memory=True)
         test_loader = DataLoader(Subset(data, test_idx), batch_size=BSZ,
                                  shuffle=False)
         net = net()
@@ -87,7 +98,8 @@ def main(args):
         gt = restore_func(target[test_idx])
         prd = restore_func(score)
         res.append(mse(gt, prd))
-        print(f"{DATAFILE.stem}_RUN_{_}: {mse(gt,prd)}")
+        print(f"mse_{DATAFILE.stem}_RUN_{_}: {mse(gt, prd)}")
+        print(f"mse_percls_{DATAFILE.stem}_RUN_{_}: {mse(gt, prd, 0)}")
 
     avg_mse, std_mse = np.asarray(res).mean(), np.asarray(res).std()
     return avg_mse, std_mse
@@ -113,6 +125,12 @@ if __name__ == '__main__':
                         default=5, type=int)
     parser.add_argument("-l", "--lr", help="learning rate",
                         default=1e-3, type=float)
+    parser.add_argument("--multiclass", action="store_true", 
+                        help="specify if multiclass")
+    parser.add_argument("--sample", help="train on a sample of the dataset",
+                        type=int)
+    parser.add_argument("--use_tqdm", action="store_true", 
+                        help="show progress bar")
     parsed_args = parser.parse_args()
     print("#",parsed_args)
     res = main(parsed_args)

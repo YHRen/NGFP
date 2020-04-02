@@ -19,6 +19,7 @@ class NeuralFingerPrint(nn.Module):
         self.gop = GraphOutput(input_dim=134, output_dim=128,
                                activation=gop_activation)
         self.pool = GraphPool()
+        self.to(dev)
     
     def forward(self, atoms, bonds, edges):
         atoms = self.gcn1(atoms, bonds, edges)
