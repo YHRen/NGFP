@@ -29,8 +29,10 @@ def normalize_array(A):
     return norm_func, restore_func
 
 
-def load_csv(data_file, target_name, dem=","):
+def load_csv(data_file, target_name, dem=",", sample=None):
     df = pd.read_csv(data_file, delimiter=dem)
+    if sample is not None:
+        df = df.sample(sample) if isinstance(sample,int) else df.sample(frac=sample)
     return df['smiles'], df[target_name].values
 
 
@@ -60,7 +62,8 @@ def main(args):
                                                sample=args.sample)
         print(f"column names {DATAFILE.stem}: {KEYS}")
     else:
-        SMILES, TARGET = load_csv(DATAFILE, "reg", dem=args.delimiter)
+        SMILES, TARGET = load_csv(DATAFILE, "reg", dem=args.delimiter,
+                                  sample=args.sample)
     NCLASS = len(SMILES)
 
     def build_data_net(args, target):
