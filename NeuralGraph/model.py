@@ -1,3 +1,4 @@
+import sys
 import torch as T
 from torch import nn
 from .layer import GraphConv, GraphPool, GraphOutput
@@ -59,15 +60,17 @@ class MLP(nn.Module):
                 optimizer.step()
             loss_valid = self.evaluate(loader_valid, criterion=criterion)
             print('[Epoch:%d/%d] %.1fs loss_train: %f loss_valid: %f' % (
-                epoch, epochs, time.time() - t0, loss.item(), loss_valid))
+                epoch, epochs, time.time() - t0, loss.item(), loss_valid),
+                  file=sys.stderr)
             if loss_valid < best_loss:
                 T.save(self, path + '.pkg')
                 print('[Performance] loss_valid is improved from %f to %f, Save model to %s' % (
-                    best_loss, loss_valid, path + '.pkg'))
+                    best_loss, loss_valid, path + '.pkg'), file=sys.stderr)
                 best_loss = loss_valid
                 last_saving = epoch
             else:
-                print('[Performance] loss_valid is not improved.')
+                print('[Performance] loss_valid is not improved.',
+                      file=sys.stderr)
             if early_stop is not None and epoch - last_saving > early_stop: break
         return T.load(path + '.pkg')
 
@@ -122,15 +125,18 @@ class QSAR(nn.Module):
                 optimizer.step()
             loss_valid = self.evaluate(loader_valid, criterion=criterion)
             print('[Epoch:%d/%d] %.1fs loss_train: %f loss_valid: %f' % (
-                epoch, epochs, time.time() - t0, loss.item(), loss_valid))
+                epoch, epochs, time.time() - t0, loss.item(), loss_valid),
+                  file=sys.stderr)
             if loss_valid < best_loss:
                 T.save(self, path + '.pkg')
                 print('[Performance] loss_valid is improved from %f to %f, Save model to %s' % (
-                    best_loss, loss_valid, path + '.pkg'))
+                    best_loss, loss_valid, path + '.pkg'),
+                      file=sys.stderr)
                 best_loss = loss_valid
                 last_saving = epoch
             else:
-                print('[Performance] loss_valid is not improved.')
+                print('[Performance] loss_valid is not improved.',
+                      file=sys.stderr)
             if early_stop is not None and epoch - last_saving > early_stop: break
         return T.load(path + '.pkg')
 
