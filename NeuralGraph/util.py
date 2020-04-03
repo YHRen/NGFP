@@ -119,3 +119,9 @@ def calc_distance(net, data, smiles, FP_LEN,\
 
     res = np.asarray(res)
     return res
+
+def count_params(net):
+    res = 0
+    res = sum(x.numel() for x in net.parameters())
+    return res
+
