@@ -60,11 +60,12 @@ def main(args):
     if args.multiclass:
         SMILES, TARGET, KEYS = load_multiclass_csv(DATAFILE, dem=args.delimiter,
                                                sample=args.sample)
-        print(f"column names {DATAFILE.stem}: {KEYS}")
+        print(f"column names {DATAFILE.stem}: {KEYS.tolist()}")
+        NCLASS = len(KEYS)
     else:
         SMILES, TARGET = load_csv(DATAFILE, "reg", dem=args.delimiter,
                                   sample=args.sample)
-    NCLASS = len(SMILES)
+        NCLASS = 1
 
     def build_data_net(args, target):
         if args.fp_method == FP_METHODS[0]:

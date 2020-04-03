@@ -34,7 +34,7 @@ do
             #run code here
             CUDA_VISIBLE_DEVICES=$gpu_id python ../main_covid.py ${df} nfp \
                 --delimiter "\t" --output_dir ${output_dir} \
-                -b 32 -e 500 -r 5  >${output_dir}${logf} \
+                -b 32 -e 500 -r 5  2>/dev/null >${output_dir}${logf} \
                 &
             let "fidx++"
         fi
