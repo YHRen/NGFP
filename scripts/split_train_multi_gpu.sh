@@ -7,7 +7,6 @@ IFS="," read -r -a column_names <<<$(head -n 1 ${data_file});
 unset IFS
 start_gpu_id=13
 end_gpu_id=16 #exclusive
-protein_name="6vww"
 total_gpu=$((end_gpu_id - start_gpu_id))
 output_dir="../output/"
 N=${#column_names[@]}
@@ -27,7 +26,7 @@ do
             logf=${data_file##*/}
             logf=${logf%.csv}${df}.log
             #run code here
-            CUDA_VISIBLE_DEVICES=$gpu_id python ../main_covid.py ${df} nfp \
+            CUDA_VISIBLE_DEVICES=$gpu_id python ../main_covid.py ${data_file} nfp \
                 --output_dir ${output_dir} \
                 --target_name $df \
                 --split_seed 7 \
