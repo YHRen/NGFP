@@ -25,7 +25,7 @@ do
             echo "gpu_id" $gpu_id idx $idx ${column_names[$idx]} 
             df=${column_names[$idx]} 
             logf=${data_file##*/}
-            logf=${logf%.csv}.log
+            logf=${logf%.csv}${df}.log
             #run code here
             CUDA_VISIBLE_DEVICES=$gpu_id python ../main_covid.py ${df} nfp \
                 --output_dir ${output_dir} \

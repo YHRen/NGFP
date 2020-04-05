@@ -61,17 +61,19 @@ def main(args):
     OUTPUT, SMILES, TARGET = [None]*3
     DATAFILE = Path(args.datafile)
     assert DATAFILE.exists()
-    OUTPUT = args.output_dir+DATAFILE.stem+".pkl"
+    OUTPUT = args.output_dir+DATAFILE.stem
     if args.multiclass:
         SMILES, TARGET, KEYS = load_multiclass_csv(DATAFILE, dem=args.delimiter,
                                                sample=args.sample)
         print(f"column names {DATAFILE.stem}: {KEYS.tolist()}")
         NCLASS = len(KEYS)
+        OUTPUT+="multi_class"
     else:
         SMILES, TARGET = load_csv(DATAFILE,
                                   args.target_name if args.target_name else 'reg',
                                   dem=args.delimiter, sample=args.sample)
         NCLASS = 1
+        OUTPUT+="args.target_name"
 
     def build_data_net(args, target):
         if args.fp_method == FP_METHODS[0]:
