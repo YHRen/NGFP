@@ -16,3 +16,9 @@ do
     awk -F, '{ print $5 "\t" $1 "\t" $4}' $i >${i%".csv"}.smi
 done
 ```
+
+
+## load csv file 
+```
+df = pd.read_csv('6vww_sample10k.csv', index_col=0)
+```

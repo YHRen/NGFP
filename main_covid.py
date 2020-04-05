@@ -1,4 +1,5 @@
 from pathlib import Path
+import hashlib
 from torch.utils.data import DataLoader, Subset
 from NeuralGraph.dataset import MolData, SmileData
 from NeuralGraph.model import QSAR, MLP
@@ -10,14 +11,19 @@ import argparse
 
 FP_METHODS = ["morgan", "nfp"]
 FP_LEN = 1<<9 # fingerprint length for circular FP
+SHUFFLE_SIG = None
 
 def split_train_valid_test(n, p=0.8, v=0.1, seed=None):
+    global SHUFFLE_SIG
     if seed:
         np.random.seed(seed)
     idx = np.arange(n)
     np.random.shuffle(idx)
     s = int(n*p)
     t = int(n*v)
+    m = hashlib.sha256()
+    m.update(idx.tobytes())
+    SHUFFLE_SIG = m.hexdigest()
     # train, valid, test
     return idx[:s], idx[s:(s+t)], idx[(s+t):]
 
@@ -38,7 +44,6 @@ def load_csv(data_file, target_name, dem=",", sample=None):
 
 def load_multiclass_csv(data_file, dem=",", sample=None):
     df = pd.read_csv(data_file, delimiter=dem)
-    df = df.drop(columns=["Unnamed: 0", "name"]) # error handling
     df = df.set_index('smiles')
     df = df.apply(pd.to_numeric, errors='coerce')
     df = df.dropna()
@@ -63,8 +68,9 @@ def main(args):
         print(f"column names {DATAFILE.stem}: {KEYS.tolist()}")
         NCLASS = len(KEYS)
     else:
-        SMILES, TARGET = load_csv(DATAFILE, "reg", dem=args.delimiter,
-                                  sample=args.sample)
+        SMILES, TARGET = load_csv(DATAFILE,
+                                  args.target_name if args.target_name else 'reg',
+                                  dem=args.delimiter, sample=args.sample)
         NCLASS = 1
 
     def build_data_net(args, target):
@@ -84,7 +90,7 @@ def main(args):
     res = []
     for _ in range(RUNS):
         train_idx, valid_idx, test_idx = split_train_valid_test(len(TARGET),
-                                                                seed=None)
+                                                                seed=args.split_seed)
         norm_func, restore_func = normalize_array(
             np.concatenate([TARGET[train_idx], TARGET[valid_idx]], axis=0))
         target = norm_func(TARGET)
@@ -102,6 +108,7 @@ def main(args):
         gt = restore_func(target[test_idx])
         prd = restore_func(score)
         res.append(mse(gt, prd))
+        print(f"split_sig: {SHUFFLE_SIG}")
         print(f"mse_{DATAFILE.stem}_RUN_{_}: {mse(gt, prd)}")
         print(f"mse_percls_{DATAFILE.stem}_RUN_{_}: {mse(gt, prd, 0)}")
 
@@ -118,7 +125,7 @@ if __name__ == '__main__':
                         help="Specify the fingerprint method",
                         choices=FP_METHODS)
     parser.add_argument("--delimiter", help="choose the delimiter of the smi\
-                        file", type=str, default=" ")
+                        file", type=str, default=",")
     parser.add_argument("--output_dir", help="specify the output directory",
                         type=str, default="./output/")
     parser.add_argument("-b", "--batch-size", help="batch size",
@@ -129,13 +136,18 @@ if __name__ == '__main__':
                         default=5, type=int)
     parser.add_argument("-l", "--lr", help="learning rate",
                         default=1e-3, type=float)
-    parser.add_argument("--multiclass", action="store_true", 
+    target_mode = parser.add_mutually_exclusive_group()
+    target_mode.add_argument("--target_name", type=str,
+                        help="specify the column name")
+    target_mode.add_argument("--multiclass", action="store_true",
                         help="specify if multiclass")
     parser.add_argument("--sample", help="train on a sample of the dataset",
                         type=int)
-    parser.add_argument("--use_tqdm", action="store_true", 
+    parser.add_argument("--split_seed", type=int,
+                        help="random seed for splitting dataset")
+    parser.add_argument("--use_tqdm", action="store_true",
                         help="show progress bar")
     parsed_args = parser.parse_args()
     print("#",parsed_args)
     res = main(parsed_args)
-    print(f"{Path(parsed_args.datafile).stem}: {res[0]:.4f}({res[1]:.4f})")
+    print(f"{Path(parsed_args.datafile).stem}: {res[0]:.4f}, {res[1]:.4f}")

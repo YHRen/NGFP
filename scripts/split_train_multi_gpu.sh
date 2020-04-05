@@ -1,43 +1,39 @@
 #!/bin/bash
 
-start_gpu_id=2
+RUN=3
+# 6vww_sample10k.csv
+data_file=$1
+IFS="," read -r -a column_names <<<$(head -n 1 ${data_file}); 
+unset IFS
+start_gpu_id=13
 end_gpu_id=16 #exclusive
-data_dir="../dataset/covid19/"
 protein_name="6vww"
-
 total_gpu=$((end_gpu_id - start_gpu_id))
-data_files=($(ls ${data_dir}ml.${protein_name}_pocket*_dock.smi))
 output_dir="../output/"
-sample= 20000
-
-echo ${#data_files[@]}
-echo ${data_files[0]}
-N=${#data_files[@]}
+N=${#column_names[@]}
 B=$(( (N+total_gpu)/total_gpu ))
-
-fidx=0
-
+idx=1
 echo N=$N, B=$B, G=$total_gpu
-
 for b in $(seq $B);
 do
     for gpu_id in $(seq $start_gpu_id $((end_gpu_id-1)));
     do
-        if [ $fidx -ge $N ]
+        if [ $idx -ge $N ]
         then
-            echo "out" $fidx $N
+            echo "out" $idx $N
         else
-            echo "gpu_id" $gpu_id fidx $fidx ${data_files[$fidx]} 
-            df=${data_files[$fidx]} 
-            logf=${df##*/}
-            logf=${logf%.smi}.log
+            echo "gpu_id" $gpu_id idx $idx ${column_names[$idx]} 
+            df=${column_names[$idx]} 
+            logf=${data_file##*/}
+            logf=${logf%.csv}.log
             #run code here
             CUDA_VISIBLE_DEVICES=$gpu_id python ../main_covid.py ${df} nfp \
-                --delimiter "\t" --output_dir ${output_dir} \
-                --sample $sample \
-                -b 32 -e 500 -r 5  2>/dev/null >${output_dir}${logf} \
+                --output_dir ${output_dir} \
+                --target_name $df \
+                --split_seed 7 \
+                -b 32 -e 50 -r $RUN  2>/dev/null >${output_dir}${logf} \
                 &
-            let "fidx++"
+            let "idx++"
         fi
     done
     wait
