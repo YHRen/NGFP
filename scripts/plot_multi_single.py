@@ -107,7 +107,7 @@ for sz in subset_names:
 
 df = df.sort_values(by=["single20k"])
 ds = ds.reindex(df.index)
-
+print(df.mean(axis=0))
 x = list(range(df.shape[0]))
 for k in df.columns:
     plt.errorbar(x, df[k], yerr=ds[k], label=k)
