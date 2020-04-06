@@ -8,9 +8,23 @@ PyTorch, RDkit, tqdm, numpy
 > conda install -c conda-forge rdkit
 ```
 
-## MultiTask vs SingleTask
+## MultiTask vs SingleTask accross various subsamples
 
 ![6vww fig](./figs/6vww.png)
+
+The subsets of data are randomly selected with sizes of 5k, 10k and 20k.
+All experiments are using the same fixed selections. 
+Split of train, test, validation is fixed.
+Averaged over 3 Runs. 
+
+|settings    | avergaed mse
+-------------|----------
+|single5k    | 0.844739
+|single10k   | 0.692700
+|single20k   | 0.660374
+|multi5k     | 0.839220
+|multi10k    | 0.737363
+|multi20k    | 0.709497
 
 ## Examples: 
 
