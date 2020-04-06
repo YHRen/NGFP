@@ -17,7 +17,7 @@ All experiments are using the same fixed selections.
 Split of train, test, validation is fixed.
 Averaged over 3 Runs. 
 
-|settings    | avergaed mse
+|settings    | avg. mse
 -------------|----------
 |single5k    | 0.844739
 |single10k   | 0.692700
