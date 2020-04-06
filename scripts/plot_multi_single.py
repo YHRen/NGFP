@@ -37,12 +37,11 @@ def parse_multiclass_log(filename):
     return keys, vals
                 
 
-test_file = "../output/6vww_sample10k6vww_pocket18.log"
-test_file2 = "../output/6vww_sample10kmulticlass.log"
-
 subset_names = ["5k", "10k", "20k"]
 protein_name = "6vww"
 
+#test_file = "../output/6vww_sample10k6vww_pocket18.log"
+#test_file2 = "../output/6vww_sample10kmulticlass.log"
 #print(parse_single_task_log(test_file, "6vww"))
 #print(parse_multiclass_log(test_file2))
 
@@ -66,17 +65,6 @@ def get_single_results(protein_name, sample_sz):
         stds.append(float(std))
     return keys, np.asarray(avgs), np.asarray(stds)
 
-#keys, avgs, stds = get_single_results(protein_name, subset_names[0])
-#print(keys)
-#print(avgs)
-#print(stds)
-
-# keys2, vals = parse_multiclass_log(test_file2)
-# assert set(keys)==set(keys2)
-# dct= {k:(v,u) for k, (v,u) in zip(keys,zip(avgs,stds))}
-# df = pd.DataFrame.from_dict({k:v for k,v in zip(keys, avgs)}, orient="index",
-#                            columns=["10k"])
-
 #  get single task
 df, ds = None, None
 for sz in subset_names:
@@ -96,6 +84,7 @@ for sz in subset_names:
         df = df.join(tmp)
         ds = ds.join(tmq)
 
+# get multiclass
 for sz in subset_names:
     filename = data_dir+protein_name+"_sample"+sz+"multiclass.log"
     keys, vals = parse_multiclass_log(filename)
