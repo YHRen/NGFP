@@ -8,6 +8,10 @@ PyTorch, RDkit, tqdm, numpy
 > conda install -c conda-forge rdkit
 ```
 
+## MultiTask vs SingleTask
+
+![6vww fig](.figs/6vww.png)
+
 ## Examples: 
 
 ### Generate Neural Fingerprint (NFP) using a trained model
