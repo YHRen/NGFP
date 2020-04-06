@@ -10,7 +10,7 @@ PyTorch, RDkit, tqdm, numpy
 
 ## MultiTask vs SingleTask
 
-![6vww fig](.figs/6vww.png)
+![6vww fig](./figs/6vww.png)
 
 ## Examples: 
 
