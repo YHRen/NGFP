@@ -16,31 +16,32 @@ PyTorch, RDkit, tqdm, numpy
 Demo shows top-20 most similar smile strings (by absolute score difference)
 `rho NFP: 0.3911501585258828, rho CFP: -0.17940844415167148`
 
-| smiles                                              |      nfp |   nfp rank |      cfp |   cfp rank |   |Δscr| |
-|-----------------------------------------------------|----------|------------|----------|------------|----------|
-| Cc1[nH]c2ccccc2c1C(c1cccnc1)N1CCCCC1                | 1        |          0 | 1        |        0   | 0        |
-| O=C(CSc1n[nH]c(=O)n1CCc1ccccc1)c1ccc(O)cc1O         | 0.614199 |       2409 | 0.347826 |     4739.5 | 0.206902 |
-| NC(=O)c1ccc(CNc2ccc3nnc(-c4ccccc4F)n3n2)cc1         | 0.575496 |       4154 | 0.377778 |     2527.5 | 0.546812 |
-| O=c1[nH]c2ccc(Nc3ncnc4sc5c(c34)CCC5)cc2[nH]1        | 0.495755 |       8081 | 0.333333 |     5833.5 | 0.680997 |
-| Cc1cc(C)c(-c2n[nH]c3c2C(c2ccccc2F)N(CCO)C3=O)c(O)c1 | 0.757751 |         67 | 0.365591 |     3386   | 0.716469 |
-| O=C(NCCc1nc(-c2ccccc2)n[nH]1)c1cc[nH]n1             | 0.505144 |       7697 | 0.303371 |     7838.5 | 0.783464 |
-| CCc1cccc2c(C(=O)N3CCCC(n4cccn4)C3)c[nH]c12          | 0.798882 |         12 | 0.413793 |      799.5 | 0.813368 |
-| CCC(CNC(=O)Cn1ccc(=O)[nH]c1=O)N1CCc2ccccc2C1        | 0.625723 |       1965 | 0.377778 |     2527.5 | 0.83401  |
-| CC(c1cccs1)N(C)C(=O)c1ccc2[nH]nnc2c1                | 0.69434  |        432 | 0.313953 |     7190.5 | 0.85137  |
-| Cn1nc(CCNC(=O)N[C@H]2CC[C@H](O)CC2)c2ccccc21        | 0.5884   |       3502 | 0.337079 |     5528.5 | 0.926418 |
-| NC(=O)CC1(O)CCCN(C(=O)c2c[nH]c(C(F)(F)F)c2)C1       | 0.761506 |         63 | 0.378049 |     2493   | 0.959059 |
-| c1ccc(-c2n[nH]cc2CNC2CCCN(c3cccnn3)C2)cc1           | 0.691384 |        474 | 0.423529 |      537.5 | 1.03424  |
-| Cc1cc(NC(=O)NCc2cccnc2)ccn1                         | 0.494093 |       8144 | 0.365854 |     3345   | 1.04892  |
-| O=C(NCc1n[nH]c(=O)[nH]1)C1(c2ccc(Cl)cc2)CC1         | 0.670302 |        752 | 0.259259 |     9407   | 1.05528  |
-| COc1ccc2[nH]c(SC(C)c3nc4ccccc4c(=O)[nH]3)nc2c1      | 0.606516 |       2709 | 0.377778 |     2527.5 | 1.06378  |
-| CCc1oc2ccccc2c1CC(=O)N1CCC(c2nnc[nH]2)C1            | 0.771068 |         48 | 0.406977 |     1034.5 | 1.06719  |
-| O=C(Cn1[nH]cc2c(=O)ncnc1-2)NC1(c2ccccc2)CCC1        | 0.772531 |         45 | 0.333333 |     5833.5 | 1.09636  |
-| Cc1nc(Nc2ccc(C(N)=O)cc2)c2c(-c3ccccc3)csc2n1        | 0.613946 |       2425 | 0.356322 |     4064.5 | 1.15027  |
-| CC(C)N(Cc1nc2c(cnn2C)c(=O)[nH]1)Cc1cccs1            | 0.632117 |       1730 | 0.233333 |     9753.5 | 1.18062  |
-| Cc1ncc(COP(=O)(O)O)c(CNc2co[nH]c2=O)c1O             | 0.524038 |       6853 | 0.345238 |     4890   | 1.32263  |
+| smiles                                                | nfp        | rank   | cfp        | rank    |  Δscr  |
+| ----------------------------------------------------- | ---------- | ------ | ---------- | ------- | ---------- |
+| Cc1[nH]c2ccccc2c1C(c1cccnc1)N1CCCCC1                  | 1          | 0      | 1          | 0       | 0          |
+| O=C(CSc1n[nH]c(=O)n1CCc1ccccc1)c1ccc(O)cc1O           | 0.6141     | 2409   | 0.3478     | 4739.5  | 0.2069     |
+| NC(=O)c1ccc(CNc2ccc3nnc(-c4ccccc4F)n3n2)cc1           | 0.5754     | 4154   | 0.3777     | 2527.5  | 0.5468     |
+| O=c1[nH]c2ccc(Nc3ncnc4sc5c(c34)CCC5)cc2[nH]1          | 0.4957     | 8081   | 0.3333     | 5833.5  | 0.6809     |
+| Cc1cc(C)c(-c2n[nH]c3c2C(c2ccccc2F)N(CCO)C3=O)c(O)c1   | 0.7577     | 67     | 0.3655     | 3386    | 0.7164     |
+| O=C(NCCc1nc(-c2ccccc2)n[nH]1)c1cc[nH]n1               | 0.5051     | 7697   | 0.3033     | 7838.5  | 0.7834     |
+| CCc1cccc2c(C(=O)N3CCCC(n4cccn4)C3)c[nH]c12            | 0.7988     | 12     | 0.4137     | 799.5   | 0.8133     |
+| CCC(CNC(=O)Cn1ccc(=O)[nH]c1=O)N1CCc2ccccc2C1          | 0.6257     | 1965   | 0.3777     | 2527.5  | 0.8340     |
+| CC(c1cccs1)N(C)C(=O)c1ccc2[nH]nnc2c1                  | 0.6943     | 432    | 0.3139     | 7190.5  | 0.8513     |
+| Cn1nc(CCNC(=O)N[C@H]2CC[C@H](O)CC2)c2ccccc21          | 0.5884     | 3502   | 0.3370     | 5528.5  | 0.9264     |
+| NC(=O)CC1(O)CCCN(C(=O)c2c[nH]c(C(F)(F)F)c2)C1         | 0.7615     | 63     | 0.3780     | 2493    | 0.9590     |
+| c1ccc(-c2n[nH]cc2CNC2CCCN(c3cccnn3)C2)cc1             | 0.6913     | 474    | 0.4235     | 537.5   | 1.0342     |
+| Cc1cc(NC(=O)NCc2cccnc2)ccn1                           | 0.4940     | 8144   | 0.3658     | 3345    | 1.0489     |
+| O=C(NCc1n[nH]c(=O)[nH]1)C1(c2ccc(Cl)cc2)CC1           | 0.6703     | 752    | 0.2592     | 9407    | 1.0552     |
+| COc1ccc2[nH]c(SC(C)c3nc4ccccc4c(=O)[nH]3)nc2c1        | 0.6065     | 2709   | 0.3777     | 2527.5  | 1.0637     |
+| CCc1oc2ccccc2c1CC(=O)N1CCC(c2nnc[nH]2)C1              | 0.7710     | 48     | 0.4069     | 1034.5  | 1.0671     |
+| O=C(Cn1[nH]cc2c(=O)ncnc1-2)NC1(c2ccccc2)CCC1          | 0.7725     | 45     | 0.3333     | 5833.5  | 1.0963     |
+| Cc1nc(Nc2ccc(C(N)=O)cc2)c2c(-c3ccccc3)csc2n1          | 0.6139     | 2425   | 0.3563     | 4064.5  | 1.1502     |
+| CC(C)N(Cc1nc2c(cnn2C)c(=O)[nH]1)Cc1cccs1              | 0.6321     | 1730   | 0.2333     | 9753.5  | 1.1806     |
+| Cc1ncc(COP(=O)(O)O)c(CNc2co[nH]c2=O)c1O               | 0.5240     | 6853   | 0.3452     | 4890    | 1.3226     |
 
 
 ### Spearman rank correlation (ρ)
+nfp avg: 0.44677611521262073, cfp avg: -0.13090014039680933
 
 | pocket         |    nfp ρ |      cfp ρ |
 |----------------|----------|------------|
@@ -67,7 +68,8 @@ Demo shows top-20 most similar smile strings (by absolute score difference)
 | 6vww_pocket11  | 0.526309 | -0.103178  |
 | 6vww_pocket156 | 0.554091 | -0.288988  |
 | 6vww_pocket8   | 0.39115  | -0.179408  |
-nfp avg: 0.44677611521262073, cfp avg: -0.13090014039680933
+
+
 ## MultiTask vs SingleTask accross various subsamples
 
 ![6vww fig](./figs/6vww.png)
