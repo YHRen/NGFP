@@ -66,7 +66,8 @@ def tanimoto_similarity(x, y):
     Output:
         z : 1) a value of similarity or 2) a vector of similarities
     """
-    res = np.minimum(x,y).sum(-1)/np.maximum(x,y).sum(-1)
+    assert len(x.shape) <= len(y.shape)
+    res = np.minimum(x, y).sum(-1)/np.maximum(x, y).sum(-1)
     res = np.squeeze(res)
     return res
 
