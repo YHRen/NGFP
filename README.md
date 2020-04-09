@@ -38,7 +38,7 @@ Demo shows top-20 most similar smile strings (by absolute score difference)
 | Cc1nc(Nc2ccc(C(N)=O)cc2)c2c(-c3ccccc3)csc2n1        | 0.613946 |       2425 | 0.356322 |     4064.5 | 1.15027  |
 | CC(C)N(Cc1nc2c(cnn2C)c(=O)[nH]1)Cc1cccs1            | 0.632117 |       1730 | 0.233333 |     9753.5 | 1.18062  |
 | Cc1ncc(COP(=O)(O)O)c(CNc2co[nH]c2=O)c1O             | 0.524038 |       6853 | 0.345238 |     4890   | 1.32263  |
-=========================
+
 
 ### Spearman rank correlation (ρ)
 
