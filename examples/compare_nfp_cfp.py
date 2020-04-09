@@ -38,9 +38,31 @@ def get_spearmanr(df, anchor_idx, column_idx):
     simnfp = tanimoto_similarity(nfp[idx], nfp)
     simcfp = tanimoto_similarity(cfp[idx], cfp)
     difscr = (scr-scr[idx]).abs()
-    rho1, pval = spearmanr(rankdata(simnfp), rankdata(-difscr))
-    rho2, pval = spearmanr(rankdata(simcfp), rankdata(-difscr))
-    return rho1, rho2
+    rho_nfp, pval = spearmanr(rankdata(simnfp), rankdata(-difscr))
+    rho_cfp, pval = spearmanr(rankdata(simcfp), rankdata(-difscr))
+    return rho_nfp, rho_cfp
+
+def get_topk(df, k, anchor_idx, column_idx, mode='overlap'):
+    idx = anchor_idx
+    nfp = pd2np(df['nfp'])
+    cfp = pd2np(df['cfp'])
+    scr = df.iloc[:,column_idx] if isinstance(column_idx, int) else df[column_idx]
+    simnfp = tanimoto_similarity(nfp[idx], nfp)
+    simcfp = tanimoto_similarity(cfp[idx], cfp)
+    idx_nfp =  np.argsort(simnfp)[-k:]
+    idx_cfp =  np.argsort(simcfp)[-k:]
+
+    if mode=='mean':
+        scr_nfp = scr[idx_nfp].mean()
+        scr_cfp = scr[idx_cfp].mean()
+    elif mode=='overlap':
+        scr_idx = set(np.argsort(scr)[-k:])
+        scr_nfp = scr_idx.intersection(set(idx_nfp))
+        scr_nfp = len(scr_nfp)/k
+        scr_cfp = scr_idx.intersection(set(idx_cfp))
+        scr_cfp = len(scr_cfp)/k
+        
+    return scr_nfp, scr_cfp
 
 def demo(df, anchor_idx, column_idx, k=20):
     def get_k(k, srtidx, *argv):
@@ -79,27 +101,47 @@ if __name__ == "__main__":
     parser.add_argument("--demo", help="show demo of top 20 closest score", 
                         action="store_true")
     args = parser.parse_args()
-    filename = args.datafile
-    df = pd.read_pickle(filename)
-    idx = np.argmax(df.iloc[:,-3])
-
+    
+    K = 100;
+    df = pd.read_pickle(args.datafile)
     if args.demo:
         print("DEMO on the last target")
+        idx = np.argmax(df.iloc[:,-3])
         demo(df,idx, -3)
         print("=========================\n\n")
 
     pckt, nfpr, cfpr = [], [], []
+    nfpso, cfpso = [], []
+    nfpsm, cfpsm = [], []
     for y_idx in df.columns:
         if "pocket" in y_idx:
             idx = df[y_idx].argmax()
-            r1, r2 = get_spearmanr(df, idx, y_idx)
             pckt.append(y_idx)
+            r1, r2 = get_spearmanr(df, idx, y_idx)
             nfpr.append(r1)
             cfpr.append(r2)
+            s1, s2 = get_topk(df, K, idx, y_idx, mode='overlap')
+            nfpso.append(s1)
+            cfpso.append(s2)
+            s1, s2 = get_topk(df, K, idx, y_idx, mode='mean')
+            nfpsm.append(s1)
+            cfpsm.append(s2)
 
-    table = tabulate({"pocket": pckt, "nfp ρ": nfpr, "cfp ρ": cfpr},
+    table = tabulate({"pocket": pckt,\
+                      "nfp avg": nfpsm, "cfp avg": cfpsm, \
+                      "nfp rcl": nfpso, "cfp rcl": cfpso, \
+                      "nfp ρ": nfpr, "cfp ρ": cfpr},      \
                      headers="keys",
                      tablefmt='github')
     print(table)
-    print(f"nfp avg: {np.asarray(nfpr).mean()}, cfp avg: {np.asarray(cfpr).mean()}")
+    mean_table = tabulate({"averages":[f"avg top-{K} score mean",\
+                                       f"avg top-{K} score recall", "avg spearman corr."],
+                           "nfp": [np.asarray(nfpsm).mean(),
+                                   np.asarray(nfpso).mean(),
+                                   np.asarray(nfpr).mean()],\
+                           "cfp": [np.asarray(cfpsm).mean(),
+                                   np.asarray(cfpso).mean(),
+                                   np.asarray(cfpr).mean()]\
+                           }, headers="keys", tablefmt='github')
+    print(mean_table)
 
