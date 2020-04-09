@@ -10,9 +10,10 @@ PyTorch, RDkit, tqdm, numpy
 
 ## Using NFP for similarity measure
 
-* Spearman ranking correlation between score similarity and fingerprint similarity
-* **mean score** average socre of top-k most similar fingerprints
-* **recall rate** percentage of top-k most similar fingerprints in top-k scores.
+* **ρ** Spearman ranking correlation between score similarity and fingerprint similarity
+* **mean score** average socres of top-k most similar fingerprints
+* **recall rate** fractions of top-k most similar fingerprints in top-k scores.
+* all scores higher the better
 
 10k sampled smiles, using trained NFP model, 6vww protein over 23 pockets.
 

@@ -47,6 +47,7 @@ def get_topk(df, k, anchor_idx, column_idx, mode='overlap'):
     nfp = pd2np(df['nfp'])
     cfp = pd2np(df['cfp'])
     scr = df.iloc[:,column_idx] if isinstance(column_idx, int) else df[column_idx]
+    difscr = (scr-scr[idx]).abs()
     simnfp = tanimoto_similarity(nfp[idx], nfp)
     simcfp = tanimoto_similarity(cfp[idx], cfp)
     idx_nfp =  np.argsort(simnfp)[-k:]
@@ -56,7 +57,7 @@ def get_topk(df, k, anchor_idx, column_idx, mode='overlap'):
         scr_nfp = scr[idx_nfp].mean()
         scr_cfp = scr[idx_cfp].mean()
     elif mode=='overlap':
-        scr_idx = set(np.argsort(scr)[-k:])
+        scr_idx = set(np.argsort(difscr)[:k])
         scr_nfp = scr_idx.intersection(set(idx_nfp))
         scr_nfp = len(scr_nfp)/k
         scr_cfp = scr_idx.intersection(set(idx_cfp))
@@ -98,6 +99,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--datafile", help="choose the input pkl file",
                         type=str, required=True)
+    parser.add_argument("--max", help="pick the smile with largest score\
+                        as the anchor smile", action="store_true")
     parser.add_argument("--demo", help="show demo of top 20 closest score", 
                         action="store_true")
     args = parser.parse_args()
@@ -115,7 +118,7 @@ if __name__ == "__main__":
     nfpsm, cfpsm = [], []
     for y_idx in df.columns:
         if "pocket" in y_idx:
-            idx = df[y_idx].argmax()
+            idx = df[y_idx].argmax() if args.max else df[y_idx].argmin()
             pckt.append(y_idx)
             r1, r2 = get_spearmanr(df, idx, y_idx)
             nfpr.append(r1)
