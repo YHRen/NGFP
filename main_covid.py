@@ -45,8 +45,10 @@ def load_csv(data_file, target_name, dem=",", sample=None):
 def load_multiclass_csv(data_file, dem=",", sample=None):
     df = pd.read_csv(data_file, delimiter=dem)
     df = df.set_index('smiles')
+    if "name" in df.columns: df = df.drop(columns=["name"])
     df = df.apply(pd.to_numeric, errors='coerce')
     df = df.dropna()
+    assert df.shape[0] > 0
     if sample is not None:
         df = df.sample(sample) if isinstance(sample,int) else df.sample(frac=sample)
     return df.index, df.values, df.columns
@@ -60,7 +62,7 @@ def main(args):
     BSZ, RUNS, LR, N_EPOCH = args.batch_size, args.runs, args.lr, args.epochs
     OUTPUT, SMILES, TARGET = [None]*3
     DATAFILE = Path(args.datafile)
-    assert DATAFILE.exists()
+    assert DATAFILE.exists(), DATAFILE
     OUTPUT = args.output_dir+DATAFILE.stem
     if args.multiclass:
         SMILES, TARGET, KEYS = load_multiclass_csv(DATAFILE, dem=args.delimiter,
@@ -104,7 +106,9 @@ def main(args):
         test_loader = DataLoader(Subset(data, test_idx), batch_size=BSZ,
                                  shuffle=False)
         net = net()
-        net = net.fit(train_loader, valid_loader, epochs=N_EPOCH, path=OUTPUT,
+        model_path = OUTPUT+str(_)
+        net = net.fit(train_loader, valid_loader, epochs=N_EPOCH,
+                      path=model_path,
                       criterion=nn.MSELoss(), lr=LR)
         score = net.predict(test_loader)
         gt = restore_func(target[test_idx])

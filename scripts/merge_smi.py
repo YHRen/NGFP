@@ -1,10 +1,17 @@
+import re
 from pathlib import Path
 import pandas as pd
 import argparse
 
 def get_pocket_name(s):
+    s = Path(s).stem
     s = str(s)
     return s.lstrip("ml.").rstrip("_dock.smi")
+
+def get_number(s):
+    z = re.search("\d+", s)
+    if z is None: return -1
+    return int(z[0])
 
 def merge_smi(args):
     """ merge smi files """
@@ -12,7 +19,6 @@ def merge_smi(args):
     protein_name = args.protein
     df = None
     for fname in data_path.glob("ml."+protein_name+"*_dock.smi"):
-        print(fname)
         A = pd.read_csv(fname, delimiter='\t')
         A.rename(columns = {'reg': get_pocket_name(fname)}, inplace=True)
         if df is None:
@@ -20,8 +26,11 @@ def merge_smi(args):
         else:
             df = pd.merge(df, A, on=['smiles', 'name'])
 
+    new_columns = df.columns.tolist()
+    new_columns.sort(key=get_number)
+    df = df[new_columns]
+    df = df.set_index("smiles")
     return df
-
 
 if __name__ == '__main__':
     """ merge all pockets with the same protein name"""
@@ -37,9 +46,9 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     df = merge_smi(args)
-    if args.output.endwith("csv"):
+    if args.output.endswith("csv"):
         df.to_csv(args.output)
-    elif args.output.endwith("pkl"):
+    elif args.output.endswith("pkl"):
         df.to_pickle(args.output)
     elif args.format == "csv":
         df.to_csv(args.output+".csv")

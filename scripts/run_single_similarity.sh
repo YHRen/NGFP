@@ -23,6 +23,6 @@ do
         --model $modelfile \
         --output $interfile 
 
-    python $exe2 --datafile $interfile \
+    python $exe2 --datafile $interfile --max \
     | sed -n -e "/${pckt}/p" >>single.md
 done
