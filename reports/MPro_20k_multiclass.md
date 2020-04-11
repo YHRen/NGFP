@@ -21,7 +21,7 @@ compare cfp nfp ../dataset/covid19/MPro_sample20k.pkl
 DEMO on the last target: Mpro-x1249
 rho NFP: 0.3059906736872234, rho CFP: -0.005133554407242648
 
-| smiles                                                                 |      nfp |   nfp rank |       cfp |   cfp rank |     scr |    |Δscr| |
+| smiles                                                                 |      nfp |   nfp rank |       cfp |   cfp rank |     scr |    Δscr   |
 |------------------------------------------------------------------------|----------|------------|-----------|------------|---------|-----------|
 | O=C(O[C@@H]1Cc2c(O)cc(O)cc2O[C@@H]1c1cc(O)c(O)c(O)c1)c1cc(O)c(O)c(O)c1 | 1        |          0 | 1         |        0   | 11.6778 | 0         |
 | NC(=O)Nc1ccc(S(=O)(=O)N2CCC(n3c(=O)[nH]c4ccccc43)CC2)cc1               | 0.55092  |        584 | 0.0647059 |     9038   | 11.6167 | 0.0610867 |
