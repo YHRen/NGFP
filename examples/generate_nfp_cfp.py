@@ -37,12 +37,13 @@ def compute_nfp_cfp(args):
     nfp, cfp = [], []
     bsz = 1<<9
     net = try_load_net(args.model)
+    cfp_len = args.cfp_len
     for idx in range(0, len(keys), bsz):
         cache = keys[idx:idx+bsz]
         nfp.extend(net.calc_nfp(cache))
 
     for smi in keys:
-        cfp.append(get_circular_fp(smi))
+        cfp.append(get_circular_fp(smi, fp_len=cfp_len))
 
     df['nfp'] = nfp
     df['cfp'] = cfp
@@ -56,6 +57,8 @@ if __name__ == "__main__":
     parser.add_argument("--model", help="choose the saved model file for nfp\
                         method. If not specified, large random weights would\
                         be used", type=str, required=True)
+    parser.add_argument("--cfp_len", help="choose the length of CFP\
+                        [default:128]", type=int, default=128)
     parser.add_argument("--output", help="specify the output file pandas\
                         pickle file",
                         default="../output/example_nfp_cfp.pkl")

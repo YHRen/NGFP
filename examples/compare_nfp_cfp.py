@@ -57,7 +57,7 @@ def get_topk(df, k, anchor_idx, column_idx, mode='overlap'):
         scr_nfp = scr[idx_nfp].mean()
         scr_cfp = scr[idx_cfp].mean()
     elif mode=='overlap':
-        scr_idx = set(np.argsort(difscr)[:k])
+        scr_idx = set(np.argsort(difscr)[:k]) # top closest smiles
         scr_nfp = scr_idx.intersection(set(idx_nfp))
         scr_nfp = len(scr_nfp)/k
         scr_cfp = scr_idx.intersection(set(idx_cfp))
@@ -80,14 +80,15 @@ def demo(df, anchor_idx, column_idx, k=20):
     n = len(simnfp)
     nfprank, cfprank = n-rankdata(simnfp), n-rankdata(simcfp)
     srtidx = np.argsort(difscr)
-    smi, nfpk, cfpk, difk = get_k(k, srtidx,
-                                  df.index, simnfp, simcfp, difscr)
+    smi, nfpk, cfpk, scrk, difk = get_k(k, srtidx,
+                                  df.index, simnfp, simcfp, scr, difscr)
     nfprankk, cfprankk = get_k(k, srtidx, nfprank, cfprank)
                                   
     table = tabulate({"smiles": smi, "nfp": nfpk, 
                       "nfp rank": nfprankk,
                       "cfp": cfpk,
                       "cfp rank": cfprankk,
+                      "scr" : scrk,
                       "|Δscr|": difk},
                      headers="keys",
                      tablefmt='github')
@@ -103,12 +104,14 @@ if __name__ == "__main__":
                         as the anchor smile", action="store_true")
     parser.add_argument("--demo", help="show demo of top 20 closest score", 
                         action="store_true")
+    parser.add_argument("--topk", help="show demo of top K closest score", 
+                        type=int, default=100)
     args = parser.parse_args()
     
-    K = 100;
+    K = args.topk
     df = pd.read_pickle(args.datafile)
     if args.demo:
-        print("DEMO on the last target")
+        print(f"DEMO on the last target: {df.columns[-3]}")
         idx = np.argmax(df.iloc[:,-3])
         demo(df,idx, -3)
         print("=========================\n\n")
@@ -117,7 +120,7 @@ if __name__ == "__main__":
     nfpso, cfpso = [], []
     nfpsm, cfpsm = [], []
     for y_idx in df.columns:
-        if "pocket" in y_idx:
+        if "pocket" in y_idx or "Mpro" in y_idx:
             idx = df[y_idx].argmax() if args.max else df[y_idx].argmin()
             pckt.append(y_idx)
             r1, r2 = get_spearmanr(df, idx, y_idx)
