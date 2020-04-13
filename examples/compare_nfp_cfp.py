@@ -39,10 +39,8 @@ def get_spearmanr(df, tgt_idx, column_idx, exclude_zeros=True):
     scr = df.iloc[:,column_idx] if isinstance(column_idx, int) else df[column_idx]
     tgt_nfp, tgt_cfp, tgt_scr = (x[tgt_idx] for x in (nfp, cfp, scr))
 
-    print(nfp.shape)
     if exclude_zeros:
-        nfp, cfp, scr = select_idx(scr!=0, nfp, cfp, scr)
-    print(nfp.shape)
+        nfp, cfp, scr = select_idx(scr != 0, nfp, cfp, scr)
     
     simnfp = tanimoto_similarity(tgt_nfp, nfp)
     simcfp = tanimoto_similarity(tgt_cfp, cfp)
@@ -57,10 +55,8 @@ def get_topk(df, k, tgt_idx, column_idx, mode='overlap', exclude_zeros=True):
     scr = df.iloc[:,column_idx] if isinstance(column_idx, int) else df[column_idx]
     tgt_nfp, tgt_cfp, tgt_scr = (x[tgt_idx] for x in (nfp, cfp, scr))
 
-    print(nfp.shape)
     if exclude_zeros:
         nfp, cfp, scr = select_idx(scr!=0, nfp, cfp, scr)
-    print(nfp.shape)
 
     simnfp = tanimoto_similarity(tgt_nfp, nfp)
     simcfp = tanimoto_similarity(tgt_cfp, cfp)
@@ -80,34 +76,46 @@ def get_topk(df, k, tgt_idx, column_idx, mode='overlap', exclude_zeros=True):
         
     return scr_nfp, scr_cfp
 
-def demo(df, anchor_idx, column_idx, k=20):
+def demo(df, tgt_idx, column_idx, k=20, exclude_zeros=True, sorted_by="nfp"):
+    """
+    sorted_by : nfp, cfp, scr
+    """
     def get_k(k, srtidx, *argv):
         return (v[srtidx][:k] for v in argv)
-    idx = anchor_idx
     nfp = pd2np(df['nfp'])
     cfp = pd2np(df['cfp'])
     scr = df.iloc[:,column_idx] if isinstance(column_idx, int) else df[column_idx]
-    simnfp = tanimoto_similarity(nfp[idx], nfp)
-    simcfp = tanimoto_similarity(cfp[idx], cfp)
-    difscr = (scr-scr[idx]).abs()
+    tgt_nfp, tgt_cfp, tgt_scr = (x[tgt_idx] for x in (nfp, cfp, scr))
+    if exclude_zeros:
+        nfp, cfp, scr = select_idx(scr != 0, nfp, cfp, scr)
+    simnfp = tanimoto_similarity(tgt_nfp, nfp)
+    simcfp = tanimoto_similarity(tgt_cfp, cfp)
+    difscr = (scr-tgt_scr).abs()
     rho1, pval = spearmanr(rankdata(simnfp), rankdata(-difscr))
     rho2, pval = spearmanr(rankdata(simcfp), rankdata(-difscr))
     n = len(simnfp)
     nfprank, cfprank = n-rankdata(simnfp), n-rankdata(simcfp)
-    srtidx = np.argsort(difscr)
+    if sorted_by == "nfp":
+        srtidx = np.argsort(nfprank)
+    elif sorted_by == "cfp":
+        srtidx = np.argsort(cfprank)
+    elif sorted_by == "scr":
+        srtidx = np.argsort(difscr) # sort by ground truth
+    else:
+        raise NotImplementedError
+    
     smi, nfpk, cfpk, scrk, difk = get_k(k, srtidx,
                                   df.index, simnfp, simcfp, scr, difscr)
     nfprankk, cfprankk = get_k(k, srtidx, nfprank, cfprank)
                                   
     table = tabulate({"smiles": smi, "nfp": nfpk, 
-                      "nfp rank": nfprankk,
+                      "nfp rank": nfprankk.astype('int32'),
                       "cfp": cfpk,
-                      "cfp rank": cfprankk,
+                      "cfp rank": cfprankk.astype('int32'),
                       "scr" : scrk,
                       "|Δscr|": difk},
                      headers="keys",
-                     tablefmt='github',
-                     floatfmt='.4f')
+                     tablefmt='github')
     print(f"rho NFP: {rho1}, rho CFP: {rho2}")
     print(table)
     return rho1, rho2
@@ -118,6 +126,8 @@ if __name__ == "__main__":
                         type=str, required=True)
     parser.add_argument("--max", help="pick the smile with largest score\
                         as the anchor smile", action="store_true")
+    parser.add_argument("--exclude_zeros", help="exclude smiles with \
+                        zero score", action="store_true")
     parser.add_argument("--demo", help="show demo of top 20 closest score", 
                         action="store_true")
     parser.add_argument("--topk", help="show demo of top K closest score", 
@@ -130,7 +140,6 @@ if __name__ == "__main__":
         print(f"DEMO on the last target: {df.columns[-3]}")
         idx = np.argmax(df.iloc[:,-3])
         demo(df,idx, -3)
-        print("=========================\n\n")
 
     pckt, nfpr, cfpr = [], [], []
     nfpso, cfpso = [], []
@@ -139,13 +148,16 @@ if __name__ == "__main__":
         if "pocket" in y_idx or "Mpro" in y_idx:
             idx = df[y_idx].argmax() if args.max else df[y_idx].argmin()
             pckt.append(y_idx)
-            r1, r2 = get_spearmanr(df, idx, y_idx)
+            r1, r2 = get_spearmanr(df, idx, y_idx,
+                                   exclude_zeros=args.exclude_zeros)
             nfpr.append(r1)
             cfpr.append(r2)
-            s1, s2 = get_topk(df, K, idx, y_idx, mode='overlap')
+            s1, s2 = get_topk(df, K, idx, y_idx, mode='overlap',
+                                   exclude_zeros=args.exclude_zeros)
             nfpso.append(s1)
             cfpso.append(s2)
-            s1, s2 = get_topk(df, K, idx, y_idx, mode='mean')
+            s1, s2 = get_topk(df, K, idx, y_idx, mode='mean',
+                                   exclude_zeros=args.exclude_zeros)
             nfpsm.append(s1)
             cfpsm.append(s2)
 
