@@ -106,7 +106,8 @@ def demo(df, anchor_idx, column_idx, k=20):
                       "scr" : scrk,
                       "|Δscr|": difk},
                      headers="keys",
-                     tablefmt='github')
+                     tablefmt='github',
+                     floatfmt='.4f')
     print(f"rho NFP: {rho1}, rho CFP: {rho2}")
     print(table)
     return rho1, rho2
@@ -153,7 +154,8 @@ if __name__ == "__main__":
                       "nfp rcl": nfpso, "cfp rcl": cfpso, \
                       "nfp ρ": nfpr, "cfp ρ": cfpr},      \
                      headers="keys",
-                     tablefmt='github')
+                     tablefmt='github',
+                     floatfmt='.4f')
     print(table)
     mean_table = tabulate({"averages":[f"avg top-{K} score mean",\
                                        f"avg top-{K} score recall", "avg spearman corr."],
@@ -163,6 +165,7 @@ if __name__ == "__main__":
                            "cfp": [np.asarray(cfpsm).mean(),
                                    np.asarray(cfpso).mean(),
                                    np.asarray(cfpr).mean()]\
-                           }, headers="keys", tablefmt='github')
+                           }, headers="keys", tablefmt='github',
+                          floatfmt='.4f')
     print(mean_table)
 
