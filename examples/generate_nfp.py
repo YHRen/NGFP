@@ -54,6 +54,8 @@ if __name__ == "__main__":
                         the smile strings.", type=int, default=0)
     parser.add_argument("--skip", help="choose the number of lines to skip\
                         .", type=int, default=0)
+    parser.add_argument("-b", "--batch_size", help="batch size for processing \
+                        through NFP", type=int, default=32)
     mux_group = parser.add_mutually_exclusive_group(required=True)
     mux_group.add_argument("--model", help="choose the saved model file for nfp\
                         method. If not specified, large random weights would\
@@ -68,7 +70,7 @@ if __name__ == "__main__":
         net = try_load_net(args.model)
         dmt, idx = args.delimiter, args.column_index
         res = []
-        bsz = 1<<11
+        bsz = args.batch_size
         with open(args.datafile,'r') as fp:
             osc, cache = oscillator(bsz), []
             if args.skip > 0:

@@ -100,6 +100,10 @@ def tensorise_smiles(smiles, max_degree=5, max_atoms=None, use_tqdm=False):
 
             # If max_degree is exceeded, resize if max_degree=None (auto), else raise
             new_degree = max(a1_neigh, a2_neigh) + 1
+            #print("mol ix",mol_ix, s, "new degree", new_degree,
+            #      "bond_tensor.shape[2]",
+            #      bond_tensor.shape[2],
+            #      "max_degree", max_degree)
             if new_degree > bond_tensor.shape[2]:
                 # assert max_degree is None, 'too many neighours ({0}) in molecule: {1}'.format(new_degree, s)
                 # bond_tensor = padaxis(bond_tensor, new_degree, axis=2)
