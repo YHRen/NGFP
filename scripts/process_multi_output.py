@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from pathlib import Path
 from tabulate import tabulate
+import matplotlib.pyplot as plt
 
 def parse_multiclass_log(filename):
     keys = None
@@ -43,6 +44,10 @@ orgcsv = "../dataset/covid19/MPro_merged.csv"
 df2 = pd.read_csv(orgcsv)
 df2 = df2.set_index("smiles")
 df2 = df2.drop(columns=["name"])
+hist = df2.hist(bins=50, figsize=(24,24))
+plt.savefig('./test.png', dpi=300, bbox_inch="tight")
+print(hist)
+
 df2desc = df2.describe()
 df2desc = df2desc.transpose()
 df2desc.to_csv("../output/MPro_describe.csv")
@@ -51,3 +56,5 @@ df2desc.index = df2desc.index.rename("keys")
 df3 = df.merge(df2desc, on="keys")
 df3["normalized MSE"] = df3["MSE"]/df3["std"]**2
 print(tabulate(df3, headers=df3.columns, tablefmt="github"))
+
+

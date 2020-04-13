@@ -30,26 +30,41 @@ def pd2np(series):
         res[i] = series[i]
     return res
 
-def get_spearmanr(df, anchor_idx, column_idx):
-    idx = anchor_idx
+def select_idx(zero_idx, *argv):
+    return (x[zero_idx] for x in argv)
+
+def get_spearmanr(df, tgt_idx, column_idx, exclude_zeros=True):
     nfp = pd2np(df['nfp'])
     cfp = pd2np(df['cfp'])
     scr = df.iloc[:,column_idx] if isinstance(column_idx, int) else df[column_idx]
-    simnfp = tanimoto_similarity(nfp[idx], nfp)
-    simcfp = tanimoto_similarity(cfp[idx], cfp)
-    difscr = (scr-scr[idx]).abs()
+    tgt_nfp, tgt_cfp, tgt_scr = (x[tgt_idx] for x in (nfp, cfp, scr))
+
+    print(nfp.shape)
+    if exclude_zeros:
+        nfp, cfp, scr = select_idx(scr!=0, nfp, cfp, scr)
+    print(nfp.shape)
+    
+    simnfp = tanimoto_similarity(tgt_nfp, nfp)
+    simcfp = tanimoto_similarity(tgt_cfp, cfp)
+    difscr = (scr-tgt_scr).abs()
     rho_nfp, pval = spearmanr(rankdata(simnfp), rankdata(-difscr))
     rho_cfp, pval = spearmanr(rankdata(simcfp), rankdata(-difscr))
     return rho_nfp, rho_cfp
 
-def get_topk(df, k, anchor_idx, column_idx, mode='overlap'):
-    idx = anchor_idx
+def get_topk(df, k, tgt_idx, column_idx, mode='overlap', exclude_zeros=True):
     nfp = pd2np(df['nfp'])
     cfp = pd2np(df['cfp'])
     scr = df.iloc[:,column_idx] if isinstance(column_idx, int) else df[column_idx]
-    difscr = (scr-scr[idx]).abs()
-    simnfp = tanimoto_similarity(nfp[idx], nfp)
-    simcfp = tanimoto_similarity(cfp[idx], cfp)
+    tgt_nfp, tgt_cfp, tgt_scr = (x[tgt_idx] for x in (nfp, cfp, scr))
+
+    print(nfp.shape)
+    if exclude_zeros:
+        nfp, cfp, scr = select_idx(scr!=0, nfp, cfp, scr)
+    print(nfp.shape)
+
+    simnfp = tanimoto_similarity(tgt_nfp, nfp)
+    simcfp = tanimoto_similarity(tgt_cfp, cfp)
+    difscr = (scr-tgt_scr).abs()
     idx_nfp =  np.argsort(simnfp)[-k:]
     idx_cfp =  np.argsort(simcfp)[-k:]
 
