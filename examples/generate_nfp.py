@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 from tqdm import tqdm
 from pathlib import Path, PurePath
+import warnings
 import sys
 sys.path.insert(1,str(PurePath(Path.cwd()).parent))
 sys.path.insert(1,str(PurePath(Path.cwd())))
@@ -43,6 +44,24 @@ def oscillator(period):
         return z
     return f
 
+def is_valid_smile_for_NFP(sml, max_degree=6):
+    """
+        NFP requires a valid smile string. 
+    """
+    try:
+        mol = Chem.MolFromSmiles(sml)
+        atoms = mol.GetAtoms()
+    except:
+        warnings.warn(f"Not a valid SMILE: {sml}")
+        return False
+
+    for atom in atoms:
+        if atom.GetDegree() >= max_degree:
+            warnings.warn(f"larger than max degree {max_degree} {sml}")
+            return False
+    return True
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -62,14 +81,14 @@ if __name__ == "__main__":
                         be used", type=str)
     mux_group.add_argument("--morgan", help="use circular fingerprint method \
                         (Morgan)", type=int)
-    parser.add_argument("--output", help="specify the output file (npy)",
-                        default="./output/example_nfp_output.npy")
+    parser.add_argument("--output", help="specify the output file (npz)",
+                        default="./output/example_nfp_output.npz")
     args = parser.parse_args()
 
+    res_fp, res_smiles = [], []
     if args.model:
         net = try_load_net(args.model)
         dmt, idx = args.delimiter, args.column_index
-        res = []
         bsz = args.batch_size
         with open(args.datafile,'r') as fp:
             osc, cache = oscillator(bsz), []
@@ -77,23 +96,27 @@ if __name__ == "__main__":
                 for _ in zip(fp, range(args.skip)): continue
             for line in tqdm(fp):
                 if osc():
-                    res.append(net.calc_nfp(cache))
+                    res_fp.append(net.calc_nfp(cache))
+                    res_smiles.extend(cache)
                     cache = []
                 sml = line_parser(line, dmt=dmt, idx=idx)
-                cache.append(sml)
+                if is_valid_smile_for_NFP(sml, 6):
+                    cache.append(sml)
 
             if len(cache) > 0:
-               res.append(net.calc_nfp(cache))
+               res_fp.append(net.calc_nfp(cache))
+               res_smiles.extend(cache)
     else: # args.morgan
         dmt, idx = args.delimiter, args.column_index
         fp_len = args.morgan if args.morgan > 0 else 128
-        res = []
         with open(args.datafile,'r') as fp:
             if args.skip > 0:
                 for _ in zip(fp, range(args.skip)): continue
             for line in tqdm(fp):
                 sml = line_parser(line, dmt=dmt, idx=idx)
-                res.append(get_circular_fp(sml, fp_len=args.morgan))
+                res_fp.append(get_circular_fp(sml, fp_len=args.morgan))
+                res_smiles.append(sml)
 
-    res = np.concatenate(res)
-    np.save(args.output, res)
+    res_fp = np.concatenate(res_fp)
+    res_smiles = np.asarray(res_smiles)
+    np.savez_compressed(args.output, smiles=res_smiles, fp=res_fp)

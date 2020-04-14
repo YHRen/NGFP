@@ -67,9 +67,15 @@ def tensorise_smiles(smiles, max_degree=5, max_atoms=None, use_tqdm=False):
 
     throw_away = []
     for mol_ix, s in enumerate(smiles):
-        mol = Chem.MolFromSmiles(s)
-        atoms = mol.GetAtoms()
-        bonds = mol.GetBonds()
+        throw_away_flag = False
+        try:
+            mol = Chem.MolFromSmiles(s)
+            atoms = mol.GetAtoms()
+            bonds = mol.GetBonds()
+        except:
+            print("throw_away ", mol_ix, s, file=sys.stderr)
+            throw_away.append(mol_ix)
+            continue
 
         # If max_atoms is exceeded, resize if max_atoms=None (auto), else raise
         if len(atoms) > atom_tensor.shape[1]:
@@ -88,7 +94,6 @@ def tensorise_smiles(smiles, max_degree=5, max_atoms=None, use_tqdm=False):
         # preallocate array with neighbor lists (indexed by atom)
         connectivity_mat = [[] for _ in atoms]
 
-        throw_away_flag = False
         for bond in bonds:
             # lookup atom ids
             a1_ix = rdkit_ix_lookup[bond.GetBeginAtom().GetIdx()]
