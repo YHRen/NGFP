@@ -8,6 +8,34 @@ PyTorch, RDkit, tqdm, numpy
 > conda install -c conda-forge rdkit
 ```
 
+## Applying NFP on canonical CSV files
+The input CSV file must follows the convention of 
+
+1. contains **no** header.
+1. three columns: **Dataset Name**, **Molecule Name**, **SMILES**
+
+The code takes three required arguments: 1) input file, 2) output directory, 3) pretrained model
+
+for example:
+
+```
+python examples/generate_nfp.py \ 
+    ./dataset/canonical_ANL/DUD_sample.csv \  # input file
+    ./output/DUD/                          \  # output directory
+    --model ./pretrained/MPro_mergedmulti_class.pkg \
+    --chunk_size 100                       \  # for demo purpose
+    --dataset_name DUDE # if not defined, will derive from input
+```
+
+If the number of molecules is larger than the `chunk_size`, the output consists of
+a series of csv files, indicated by `<dataset_name>-<starting_id>-<ending_id>.csv`. 
+Note that, the range is always dividable by the `chunk_size`, even for the last chunk.
+Some dataset contains invalid SMILES, to handle this, a `missing` subdirectory is created.
+The naming convention of files is consistent with the outout file name. If there are some 
+invalid SMILES within range `[i*chunk_size, (i+1)*chunk_size)`, the total number of smiles
+in the corresponding output file and missing file is equal to the `chunk_size`.
+
+
 ## Using NFP for similarity measure
 
 * **ρ** Spearman ranking correlation between score similarity and fingerprint similarity
