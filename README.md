@@ -20,10 +20,10 @@ for example:
 
 ```
 python examples/generate_nfp.py \ 
-    ./dataset/canonical_ANL/DUD_sample.csv \  # input file
-    ./output/DUD/                          \  # output directory
+    ./dataset/canonical_ANL/DUD_sample.csv \  `# input file`
+    ./output/DUD/                          \  `# output directory`
     --model ./pretrained/MPro_mergedmulti_class.pkg \
-    --chunk_size 100                       \  # for demo purpose
+    --chunk_size 100                       \  `# for demo purpose`
     --dataset_name DUDE # if not defined, will derive from input
 ```
 
