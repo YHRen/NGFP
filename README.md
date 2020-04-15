@@ -24,6 +24,7 @@ python examples/generate_nfp.py \
     -o ./output/DUD/ `# output directory`\
     --model ./pretrained/MPro_mergedmulti_class.pkg \
     --chunk_size 100 `# small value for demo purpose`\
+    --tqdm \
     --dataset_name DUDE # if not defined, will derive from input
 ```
 
