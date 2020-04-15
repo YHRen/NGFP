@@ -74,10 +74,10 @@ if __name__ == "__main__":
         <three_letter_dataset_short_name>, <molecule_ID_name>, <smiles>
     """
     parser = argparse.ArgumentParser()
-    parser.add_argument("datafile", help="choose the input smi file, csv",
-                        type=str)
-    parser.add_argument("output_dir", help="specify the output directory",
-                        type=str)
+    parser.add_argument("-i","--input_file", help="choose the input csv file",
+                        type=str, required=True)
+    parser.add_argument("-o","--output_dir", help="specify the output directory",
+                        type=str, required=True)
     parser.add_argument("--model", help="choose the pretrained model file for nfp\
                         method. If not specified, large random weights would\
                         be used", type=str, required=False)
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     OUTPUT_DIR = Path(args.output_dir)
-    INPUT = Path(args.datafile)
+    INPUT = Path(args.input_file)
     OUTPUT = args.dataset_name
     CHUNK_SZ = args.chunk_size
     if not INPUT.exists(): raise FileNotFoundError
