@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import argparse
 from pathlib import Path, PurePath
 import sys
@@ -7,71 +8,69 @@ sys.path.insert(1,str(PurePath(Path.cwd())))
 from NeuralGraph.util import dev, tanimoto_similarity
 from tabulate import tabulate
 
-def example():
-    """ demostrate the continuous tanimoto similarity
-
-    x: a neural fingerprint of length 128
-    y: a neural fingerprint of length 128
-    z: 8 neural fingerprints of length 128. (8x128 numpy matrix)
-    """
-    x = np.random.rand(128)
-    y = np.random.rand(128)
-    z = np.random.rand(4, 128)
-    print(f"x.shape = {x.shape}")
-    print(f"y.shape = {y.shape}")
-    print(f"z.shape = {z.shape}")
-    print("tanimoto(x,x) =", tanimoto_similarity(x,x))
-    print("tanimoto(x,y) =", tanimoto_similarity(x,y))
-    print("tanimoto(x,z) =", tanimoto_similarity(x,z))
-
-
-
-def line_parser(line, dmt=None, idx=0):
-    """ parse the line and get the smile string.  """
-    return line.split(dmt)[idx]
-
-def load_smiles(filename, dmt=None, idx=0):
-    res = []
-    with open(filename, 'r') as fp:
-        for line in fp:
-            res.append(line_parser(line, dmt, idx))
+def pd2np(series):
+    series = series.values
+    n, m = len(series), len(series[0])
+    res = np.zeros((n, m))
+    for i in range(n):
+        res[i] = series[i]
     return res
+
+def process_data_folder(data_folder):
+    input_dir = Path(data_folder)
+    assert input_dir.exists() and input_dir.is_dir()
+    dnames, mol_names, smls, nfps = [], [], [], []
+    files = list(input_dir.glob("**/*.csv"))
+    files.sort() # for reproduction purpose
+    for csv_file in files:
+        with open(csv_file, 'r') as fp:
+            for line in fp:
+                dname, mol_name, sml, nfp = line.split(',')
+                nfp = nfp.split(':')
+                nfp = np.asarray([float(x) for x in nfp])
+                dnames.append(dname)
+                mol_names.append(mol_name)
+                smls.append(sml)
+                nfps.append(nfp)
+
+    df = pd.DataFrame.from_dict({"dataset": dnames, 
+                                 "molecule ID": mol_names,
+                                 "smiles": smls,
+                                 "nfp": nfps})
+    return df
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--datafile", help="the input smi file",
+    parser.add_argument("-i", "--data_folder", help="the input csv file\
+                        containing neural fingerprints",
                         type=str, required=True)
-    parser.add_argument("--fingerprint", help="the generated fingerprint \
-                        file", type=str, required=True)
     parser.add_argument("--anchor_smile_idx", help="the index of the anchor\
                         smile for ranking.", type=int, default=0)
     parser.add_argument("--top_k", help="return the top k results.",
-                        default=10, type=int)
-    parser.add_argument("--delimiter", help="choose the delimiter of the smi\
-                        file", type=str, default=" ")
-    parser.add_argument("--column_index", help="choose the column_index of\
-                        the smile strings.", type=int, default=0)
+                        default=20, type=int)
     args = parser.parse_args()
 
-    dmt, idx = args.delimiter, args.column_index
     tpk, ank = args.top_k, args.anchor_smile_idx
     
     ## load smile strings and fingerprints
-    nfp = np.load(args.fingerprint)
-    sml = load_smiles(args.datafile)
+    df = process_data_folder(args.data_folder)
 
     ## compute similarities to the anchor smile of the fingerprints 
+    nfp = pd2np(df['nfp'])
+    ank = args.anchor_smile_idx
     similarities = tanimoto_similarity(nfp[ank], nfp)
 
     ## find top k, excluding itself
     sorted_idx = np.argsort(-similarities)
     top_idx = sorted_idx[:(tpk+1)] # top k+1
     top_idx = top_idx[top_idx!=ank][:tpk] # exclude itself
-    top_sml = [sml[i] for i in top_idx]
+    top_sml = [df['smiles'][i] for i in top_idx]
     top_score = similarities.take(top_idx)
 
     ## show results
-    print(f"top-{tpk} similar smiles to {sml[ank]}")
+    print(f"among total {len(df)} molecules")
+    print(f"top-{tpk} similar smiles to {df['smiles'][ank]}")
     table = tabulate(zip(top_sml, top_score),
-                     headers = ["smiles", "score"])
+                     headers = ["smiles", "score"], tablefmt='github')
     print(table)

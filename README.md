@@ -21,11 +21,11 @@ for example:
 ```
 python examples/generate_nfp.py \
     -i ./dataset/canonical_ANL/DUD_sample.csv `# input file`\
-    -o ./output/DUD/ `# output directory`\
+    -o ./output/DUD_sample/ `# output directory`\
     --model ./pretrained/MPro_mergedmulti_class.pkg \
     --chunk_size 100 `# small value for demo purpose`\
     --tqdm \
-    --dataset_name DUDE # if not defined, will derive from input
+    --dataset_name DUD_sample # if not defined, will derive from input
 ```
 
 If the number of molecules is larger than the `chunk_size`, the output consists of
@@ -36,6 +36,56 @@ The naming convention of files is consistent with the outout file name. If there
 invalid SMILES within range `[i*chunk_size, (i+1)*chunk_size)`, the total number of smiles
 in the corresponding output file and missing file is equal to the `chunk_size`.
 
+The output would look like the following, note that the third chunk (200-300)
+has samller number of molecules. 
+
+```
+$ tree -h ./output/DUD_sample
+./output/DUD_sample
+├── [132K]  DUD_sample-0-100.csv
+├── [132K]  DUD_sample-100-200.csv
+├── [6.6K]  DUD_sample-200-300.csv
+└── [4.0K]  missing
+    ├── [   0]  DUD_sample-0-100.csv
+    ├── [   0]  DUD_sample-100-200.csv
+    └── [   0]  DUD_sample-200-300.csv
+```
+
+Now, we can run the similarity search based on the generated NFPs of this sampled data.
+
+```
+python examples/compute_tanimoto.py -i ./output/DUD_sample/ --anchor_smile_idx 0 --top_k 20
+```
+
+The output will look like the following. Note that the most similar molecule
+only differs by one carbon atom.
+
+```
+among total 205 molecules
+top-20 similar smiles to C#CCOc3nc(c1ccccc1)nc4sc2CCCc2c34
+| smiles                                        |    score |
+|-----------------------------------------------|----------|
+| C#CCOc3nc(c1ccccc1)nc4sc2CCCCc2c34            | 0.953463 |
+| Nc4nc2nn(CCc1ccccc1)cc2c5nc(c3ccco3)nn45      | 0.822863 |
+| Nc3nc(c1ccco1)cc(c2cccs2)c3C#N                | 0.81952  |
+| Nc4nc2nn(Cc1ccc(F)cc1)cc2c5nc(c3ccco3)nn45    | 0.812759 |
+| Nc4nc2nn(CCCc1ccccc1)cc2c5nc(c3ccco3)nn45     | 0.804355 |
+| Nc3nc(NCCc1ccc(O)cc1)cc4nc(c2ccco2)nn34       | 0.790787 |
+| CC(C)c4ccc3Cc2c(c1ccc(Br)o1)nc(N)nc2c3c4      | 0.784824 |
+| S=c4sc2c(ncn3nc(c1ccco1)nc23)n4CCc5ccccc5     | 0.783747 |
+| Nc5nc(c1ccccc1)c4c(=O)c3cccc(CN2CCCC2)c3c4n5  | 0.781628 |
+| CC(C)CCn4cc2c(nc(N)n3nc(c1ccco1)nc23)n4       | 0.77557  |
+| Nc4nc(c1ccccc1)c3c(=O)c2ccccc2c3n4            | 0.774031 |
+| Cc1ccccc1CNC(=O)c3cc(c2ccco2)nc(N)n3          | 0.773349 |
+| Nc4nc2nn(Cc1ccc(F)cc1)nc2c5nc(c3ccco3)nn45    | 0.763374 |
+| Nc3nc(NCCc1ccc(O)cc1)nc4nc(c2ccco2)nn34       | 0.762837 |
+| OC[C@@H]1CCCN1c4nc(c2nccs2)c3sccc3n4          | 0.761922 |
+| Nc3nc(c1ccco1)cc(c2ccco2)c3C#N                | 0.760983 |
+| Nc3nc(C(=O)NCCc1ccc(O)cc1)cn4nc(c2ccco2)nc34  | 0.76034  |
+| Nc5nc(c1ccccc1)c4c(=O)c3cccc(CN2CCOCC2)c3c4n5 | 0.755121 |
+| Nc3nc(C(=O)NCc1ccccc1)cn4nc(c2ccco2)nc34      | 0.754375 |
+| COC[C@H]1CCCN1c3cc(NC(C)=O)nc(c2ccc(C)o2)n3   | 0.752776 |
+```
 
 ## Using NFP for similarity measure
 
