@@ -1,7 +1,7 @@
 #!/bin/bash
 DATASET=${1:-DUD_sample.csv}
 OUTPUT=${2:-${DATASET%.csv}}
-CHUNK_SZ=${3:-5000}
+CHUNK_SZ=${3:-100}
 echo $DATASET $OUTPUT $CHUNK_SZ
 python examples/generate_nfp.py \
     -i ./dataset/canonical_ANL/${DATASET}`# input file`\
