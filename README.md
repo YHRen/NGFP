@@ -36,6 +36,7 @@ The naming convention of files is consistent with the outout file name. If there
 invalid SMILES within range `[i*chunk_size, (i+1)*chunk_size)`, the total number of smiles
 in the corresponding output file and missing file is equal to the `chunk_size`.
 
+By running the example command, or `bash scripts/run_gen_nfp.sh` in current folder.
 The output would look like the following, note that the third chunk (200-300)
 has samller number of molecules. 
 
