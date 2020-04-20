@@ -6,6 +6,7 @@ PyTorch, RDkit, tqdm, numpy
 
 ```
 > conda create -n nfp_env # [optional]
+> source activate nfp_env # [optional]
 > conda install -c rdkit rdkit
 > pip install torch_nfp
 ```
