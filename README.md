@@ -5,7 +5,9 @@ forked from: https://github.com/XuhanLiu/NGFP
 PyTorch, RDkit, tqdm, numpy
 
 ```
-> conda install -c conda-forge rdkit
+> conda create -n nfp_env # [optional]
+> conda install -c rdkit rdkit
+> pip install torch_nfp
 ```
 
 ## Applying NFP on canonical CSV files

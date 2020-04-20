@@ -3,7 +3,7 @@ DATASET=${1:-DUD_sample.csv}
 CHUNK_SZ=${2:-100}
 OUTPUT=${DATASET%.csv}
 echo $DATASET $OUTPUT $CHUNK_SZ
-python ./examples/generate_nfp.py \
+python ./generate_nfp.py \
     -i ./dataset/canonical_ANL/${DATASET}`# input file`\
     -o ./output/${OUTPUT}/ `# output directory`\
     --model ./pretrained/MPro_mergedmulti_class.pkg \
