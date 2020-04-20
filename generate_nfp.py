@@ -9,6 +9,7 @@ from warnings import warn
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem
 from NeuralGraph.model import QSAR
+from NeuralGraph.nfp import nfp
 from NeuralGraph.util import dev, enlarge_weights
 
 def try_load_net(model_file=None):
@@ -18,9 +19,11 @@ def try_load_net(model_file=None):
             net = torch.load(args.model, map_location=dev)
         else:
             raise FileNotFoundError
-    else: # random large weights
-        net = QSAR(hid_dim=128, n_class=1, max_degree=6)
-        enlarge_weights(net, -1e4, 1e4)
+    else: 
+        net = nfp(pretrained=True, protein="Mpro", progress=True)
+        if False: # random large weights
+            net = QSAR(hid_dim=128, n_class=1, max_degree=6)
+            enlarge_weights(net, -1e4, 1e4)
     return net.to(dev)
 
 
