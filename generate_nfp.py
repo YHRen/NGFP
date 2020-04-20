@@ -6,9 +6,6 @@ from functools import partial
 from tqdm import tqdm
 from pathlib import Path, PurePath
 from warnings import warn
-import sys
-sys.path.insert(1,str(PurePath(Path.cwd()).parent))
-sys.path.insert(1,str(PurePath(Path.cwd())))
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem
 from NeuralGraph.model import QSAR
