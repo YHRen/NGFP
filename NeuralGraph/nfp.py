@@ -1,6 +1,6 @@
 from .model import QSAR
 import torch
-from torch.utils.model_zoo import load_url 
+from torch.utils.model_zoo import load_url
 
 model_urls={'Mpro':
             "https://github.com/YHRen/NGFP/blob/master/pretrained/MPro_mergedmulti_class.pkg?raw=true",
@@ -8,7 +8,7 @@ model_urls={'Mpro':
             "https://github.com/YHRen/NGFP/blob/master/pretrained/6vww_sample20kmulti_class.pkg?raw=true"}
 
 
-def nfp(pretrained=False, protein="Mpro", progress=True, **kwargs):
+def nfp_net(pretrained=False, protein="Mpro", progress=True, **kwargs):
     r"""Pretrained NFP model
     """
     if pretrained:

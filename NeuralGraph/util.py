@@ -126,3 +126,20 @@ def count_params(net):
     res = sum(x.numel() for x in net.parameters())
     return res
 
+
+def is_valid_smile(sml, max_degree=6):
+    """
+        NFP requires a valid smile string. 
+    """
+    try:
+        mol = Chem.MolFromSmiles(sml)
+        atoms = mol.GetAtoms()
+    except:
+        warn(f"Not a valid SMILE: {sml}")
+        return False
+
+    for atom in atoms:
+        if atom.GetDegree() >= max_degree:
+            warn(f"larger than max degree {max_degree} {sml}")
+            return False
+    return True

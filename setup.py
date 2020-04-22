@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name = "torch_nfp",
-    version = "0.0.2dev",
+    version = "0.0.3dev",
     author = "Yihui Ren",
     author_email = "yren@bnl.gov",
     description = ("An implementation of neural fingerprint"),

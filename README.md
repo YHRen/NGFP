@@ -58,37 +58,37 @@ $ tree -h ./output/DUD_sample
 Now, we can run the similarity search based on the generated NFPs of this sampled data.
 
 ```
-python examples/compute_tanimoto.py -i ./output/DUD_sample/ --anchor_smile_idx 0 --top_k 20
+python compute_tanimoto.py -i ../output/DUD_sample/ --query "CCCCCC1=CC(O)=C(C\C=C(/C)CCC=C(C)C)C(O)=C1" --top_k 20
 ```
 
-The output will look like the following. Note that the most similar molecule
-only differs by one carbon atom.
+The output will look like the following. 
 
 ```
 among total 205 molecules
 top-20 similar smiles to C#CCOc3nc(c1ccccc1)nc4sc2CCCc2c34
 | smiles                                        |    score |
 |-----------------------------------------------|----------|
+| C#CCOc3nc(c1ccccc1)nc4sc2CCCc2c34             | 1        |
 | C#CCOc3nc(c1ccccc1)nc4sc2CCCCc2c34            | 0.953463 |
 | Nc4nc2nn(CCc1ccccc1)cc2c5nc(c3ccco3)nn45      | 0.822863 |
 | Nc3nc(c1ccco1)cc(c2cccs2)c3C#N                | 0.81952  |
 | Nc4nc2nn(Cc1ccc(F)cc1)cc2c5nc(c3ccco3)nn45    | 0.812759 |
 | Nc4nc2nn(CCCc1ccccc1)cc2c5nc(c3ccco3)nn45     | 0.804355 |
-| Nc3nc(NCCc1ccc(O)cc1)cc4nc(c2ccco2)nn34       | 0.790787 |
+| Nc3nc(NCCc1ccc(O)cc1)cc4nc(c2ccco2)nn34       | 0.790788 |
 | CC(C)c4ccc3Cc2c(c1ccc(Br)o1)nc(N)nc2c3c4      | 0.784824 |
 | S=c4sc2c(ncn3nc(c1ccco1)nc23)n4CCc5ccccc5     | 0.783747 |
 | Nc5nc(c1ccccc1)c4c(=O)c3cccc(CN2CCCC2)c3c4n5  | 0.781628 |
 | CC(C)CCn4cc2c(nc(N)n3nc(c1ccco1)nc23)n4       | 0.77557  |
-| Nc4nc(c1ccccc1)c3c(=O)c2ccccc2c3n4            | 0.774031 |
+| Nc4nc(c1ccccc1)c3c(=O)c2ccccc2c3n4            | 0.774032 |
 | Cc1ccccc1CNC(=O)c3cc(c2ccco2)nc(N)n3          | 0.773349 |
 | Nc4nc2nn(Cc1ccc(F)cc1)nc2c5nc(c3ccco3)nn45    | 0.763374 |
-| Nc3nc(NCCc1ccc(O)cc1)nc4nc(c2ccco2)nn34       | 0.762837 |
-| OC[C@@H]1CCCN1c4nc(c2nccs2)c3sccc3n4          | 0.761922 |
-| Nc3nc(c1ccco1)cc(c2ccco2)c3C#N                | 0.760983 |
-| Nc3nc(C(=O)NCCc1ccc(O)cc1)cn4nc(c2ccco2)nc34  | 0.76034  |
+| Nc3nc(NCCc1ccc(O)cc1)nc4nc(c2ccco2)nn34       | 0.762838 |
+| OC[C@@H]1CCCN1c4nc(c2nccs2)c3sccc3n4          | 0.761923 |
+| Nc3nc(c1ccco1)cc(c2ccco2)c3C#N                | 0.760984 |
+| Nc3nc(C(=O)NCCc1ccc(O)cc1)cn4nc(c2ccco2)nc34  | 0.760341 |
 | Nc5nc(c1ccccc1)c4c(=O)c3cccc(CN2CCOCC2)c3c4n5 | 0.755121 |
-| Nc3nc(C(=O)NCc1ccccc1)cn4nc(c2ccco2)nc34      | 0.754375 |
-| COC[C@H]1CCCN1c3cc(NC(C)=O)nc(c2ccc(C)o2)n3   | 0.752776 |
+| Nc3nc(C(=O)NCc1ccccc1)cn4nc(c2ccco2)nc34      | 0.754376 |
+
 ```
 
 ## Using NFP for similarity measure

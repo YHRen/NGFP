@@ -2,11 +2,15 @@ import numpy as np
 import pandas as pd
 import argparse
 from pathlib import Path, PurePath
-import sys
-sys.path.insert(1,str(PurePath(Path.cwd()).parent))
-sys.path.insert(1,str(PurePath(Path.cwd())))
-from NeuralGraph.util import dev, tanimoto_similarity
 from tabulate import tabulate
+try:
+    import NeuralGraph
+except:
+    import sys
+    sys.path.insert(1,str(PurePath(Path.cwd()).parent))
+    sys.path.insert(1,str(PurePath(Path.cwd())))
+from NeuralGraph.util import dev, tanimoto_similarity, is_valid_smile
+from NeuralGraph.nfp import nfp_net
 
 def pd2np(series):
     series = series.values
@@ -40,37 +44,48 @@ def process_data_folder(data_folder):
     return df
 
 
+def compute_nfp(net, sml):
+    if not is_valid_smile(sml):
+        raise Exception(f"{sml} is invaild")
+    return net.calc_nfp([sml])
+
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--data_folder", help="the input csv file\
                         containing neural fingerprints",
                         type=str, required=True)
-    parser.add_argument("--anchor_smile_idx", help="the index of the anchor\
-                        smile for ranking.", type=int, default=0)
-    parser.add_argument("--top_k", help="return the top k results.",
+    parser.add_argument("-q", "--query", help="input smile string",
+                        type=str)
+    parser.add_argument("-k", "--top_k", help="return the top k results.",
                         default=20, type=int)
     args = parser.parse_args()
 
-    tpk, ank = args.top_k, args.anchor_smile_idx
+    tpk = args.top_k
+    if not args.query:
+        args.query = "CCCCCC1=CC(O)=C(C\C=C(/C)CCC=C(C)C)C(O)=C1"
     
     ## load smile strings and fingerprints
     df = process_data_folder(args.data_folder)
+    nfp = pd2np(df['nfp'])
+
+    ## load net remotely
+    net = nfp_net(pretrained=True, protein="Mpro", progress=True)
 
     ## compute similarities to the anchor smile of the fingerprints 
-    nfp = pd2np(df['nfp'])
-    ank = args.anchor_smile_idx
-    similarities = tanimoto_similarity(nfp[ank], nfp)
+    rst_nfp = compute_nfp(net, args.query)
+    similarities = tanimoto_similarity(rst_nfp, nfp)
 
     ## find top k, excluding itself
     sorted_idx = np.argsort(-similarities)
-    top_idx = sorted_idx[:(tpk+1)] # top k+1
-    top_idx = top_idx[top_idx!=ank][:tpk] # exclude itself
+    top_idx = sorted_idx[:tpk] # top k+1
     top_sml = [df['smiles'][i] for i in top_idx]
     top_score = similarities.take(top_idx)
 
     ## show results
     print(f"among total {len(df)} molecules")
-    print(f"top-{tpk} similar smiles to {df['smiles'][ank]}")
+    print(f"top-{tpk} similar smiles to {args.query}")
     table = tabulate(zip(top_sml, top_score),
                      headers = ["smiles", "score"], tablefmt='github')
     print(table)

@@ -1,0 +1,47 @@
+{% set name = "torch_nfp" %}
+{% set version = "0.0.3.dev0" %}
+
+package:
+  name: "{{ name|lower }}"
+  version: "{{ version }}"
+
+source:
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/{{ name }}-{{ version }}.tar.gz
+  sha256: ccdb022137492234a498b7af44c9e8a7fc35ae198f6b3d1530db54ef52da196d
+
+build:
+  number: 0
+  script: "{{ PYTHON }} -m pip install . --no-deps --ignore-installed -vv "
+
+requirements:
+  host:
+    - pandas
+    - pip
+    - python
+    - scikit-learn
+    - scipy
+    - pytorch
+    - tqdm
+  run:
+    - pandas
+    - python
+    - scikit-learn
+    - scipy
+    - pytorch
+    - tqdm
+
+test:
+  imports:
+
+about:
+  home: https://github.com/YHRen/NGFP
+  license: MIT
+  license_family: MIT
+  license_file: 
+  summary: An implementation of neural fingerprint
+  doc_url: 
+  dev_url: 
+
+extra:
+  recipe-maintainers:
+    - your-github-id-here
