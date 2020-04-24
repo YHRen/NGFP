@@ -55,10 +55,10 @@ def load_multiclass_csv(data_file, dem=",", target_name=None, sample=None):
         clms.sort()
         if len(clms) == 0:
             raise RunTimeError(f"{target_name} not in the dataset")
-            return 
+            return
         df = df[clms]
     df = df.apply(pd.to_numeric, errors='coerce')
-    df = df.fillna(df.mean()) # otherwise conflicts with xuefeng's assignment
+    df = df.fillna(0) # otherwise conflicts with xuefeng's assignment
     if sample is not None:
         df = df.sample(sample) if isinstance(sample,int) else df.sample(frac=sample)
     return df.index, df.values, df.columns
@@ -78,8 +78,8 @@ def main(args):
         SMILES, TARGET, KEYS = load_multiclass_csv(DATAFILE, dem=args.delimiter,
                                                    target_name=args.target_name,
                                                    sample=args.sample)
-        print(f"column names {DATAFILE.stem}: {KEYS.tolist()}")
         NCLASS = len(KEYS)
+        print(f"{NCLASS} classes, column names {DATAFILE.stem}: {KEYS.tolist()}")
         OUTPUT+="multi_class"
     else:
         SMILES, TARGET = load_csv(DATAFILE,
@@ -116,6 +116,8 @@ def main(args):
                 train_idx = get_idx_excluding(train_idx, exclude_idx)
                 valid_idx = get_idx_excluding(valid_idx, exclude_idx)
                 test_idx = get_idx_excluding(test_idx, exclude_idx)
+            train_idx, valid_idx, test_idx = train_idx.to_numpy().squeeze(),\
+                valid_idx.to_numpy().squeeze(), test_idx.to_numpy().squeeze()
             print(train_idx.shape, valid_idx.shape, test_idx.shape)
         else:
             train_idx, valid_idx, test_idx = \
@@ -130,6 +132,7 @@ def main(args):
                                   shuffle=False, pin_memory=True)
         test_loader = DataLoader(Subset(data, test_idx), batch_size=BSZ,
                                  shuffle=False)
+        print(len(train_loader),len(valid_loader),len(test_loader))
         net = net()
         model_path = OUTPUT+str(_)
         net = net.fit(train_loader, valid_loader, epochs=N_EPOCH,
