@@ -72,7 +72,7 @@ def tensorise_smiles(smiles, max_degree=5, max_atoms=None, use_tqdm=False):
             bonds = mol.GetBonds()
         except:
             print("rdkit error", mol_ix, s, file=sys.stderr)
-            mol = Chem.MolFromSmiles(s)
+            mol = Chem.MolFromSmiles("CCO") #use a dummy smile
             atoms = mol.GetAtoms()
             bonds = mol.GetBonds()
 
