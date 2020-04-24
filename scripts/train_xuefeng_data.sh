@@ -16,6 +16,6 @@ python ../main_covid_xuefeng.py ${data_file} nfp \
        --multiclass  \
        --target_name ${protein_name} \
        --define_split ${train_idx} ${valid_idx} ${test_idx} \
-       -b 32 -e 50 -r $RUN 
+       -b 32 -e 50 -r $RUN \
        2>${output_dir}${logf%log}err \
        >${output_dir}${logf}
