@@ -58,11 +58,7 @@ def load_multiclass_csv(data_file, dem=",", target_name=None, sample=None):
             return 
         df = df[clms]
     df = df.apply(pd.to_numeric, errors='coerce')
-    test_nan = len(df)
-    #df = df.dropna() 
-    df = df.fillna(0) # otherwise conflicts with xuefeng's assignment
-    assert df.shape[0] > 0
-    assert test_nan == len(df)
+    df = df.fillna(df.mean()) # otherwise conflicts with xuefeng's assignment
     if sample is not None:
         df = df.sample(sample) if isinstance(sample,int) else df.sample(frac=sample)
     return df.index, df.values, df.columns
@@ -109,9 +105,18 @@ def main(args):
     res = []
     for _ in range(RUNS):
         if args.define_split:
+            def get_idx_excluding(a_idx, exclude_idx):
+                msk = a_idx.iloc[:,0].isin(exclude_idx.iloc[:,0])
+                return a_idx[~msk]
             train_idx = pd.read_csv(args.define_split[0])
             valid_idx = pd.read_csv(args.define_split[1])
             test_idx  = pd.read_csv(args.define_split[2])
+            if len(args.define_split) > 3:
+                exclude_idx = pd.read_csv(args.define_split[3])
+                train_idx = get_idx_excluding(train_idx, exclude_idx)
+                valid_idx = get_idx_excluding(valid_idx, exclude_idx)
+                test_idx = get_idx_excluding(test_idx, exclude_idx)
+            print(train_idx.shape, valid_idx.shape, test_idx.shape)
         else:
             train_idx, valid_idx, test_idx = \
                 split_train_valid_test(len(TARGET), seed=args.split_seed)
@@ -170,8 +175,9 @@ if __name__ == '__main__':
                         type=int)
     parser.add_argument("--split_seed", type=int,
                         help="random seed for splitting dataset")
-    parser.add_argument("--define_split", type=str, nargs=3,
-                        metavar=('train_idx', 'valid_idx', 'test_idx'),
+    parser.add_argument("--define_split", type=str, nargs=4,
+                        metavar=('train_idx', 'valid_idx', 'test_idx',
+                                 'exclude_idx'),
                         help="train_index, valid_index and test_index")
     parser.add_argument("--use_tqdm", action="store_true",
                         help="show progress bar")
