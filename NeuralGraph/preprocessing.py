@@ -65,17 +65,16 @@ def tensorise_smiles(smiles, max_degree=5, max_atoms=None, use_tqdm=False):
 
     if use_tqdm: smiles=tqdm(smiles)
 
-    throw_away = []
     for mol_ix, s in enumerate(smiles):
-        throw_away_flag = False
         try:
             mol = Chem.MolFromSmiles(s)
             atoms = mol.GetAtoms()
             bonds = mol.GetBonds()
         except:
-            print("throw_away ", mol_ix, s, file=sys.stderr)
-            throw_away.append(mol_ix)
-            continue
+            print("rdkit error", mol_ix, s, file=sys.stderr)
+            mol = Chem.MolFromSmiles(s)
+            atoms = mol.GetAtoms()
+            bonds = mol.GetBonds()
 
         # If max_atoms is exceeded, resize if max_atoms=None (auto), else raise
         if len(atoms) > atom_tensor.shape[1]:
@@ -110,13 +109,13 @@ def tensorise_smiles(smiles, max_degree=5, max_atoms=None, use_tqdm=False):
             #      bond_tensor.shape[2],
             #      "max_degree", max_degree)
             if new_degree > bond_tensor.shape[2]:
-                # assert max_degree is None, 'too many neighours ({0}) in molecule: {1}'.format(new_degree, s)
+                assert max_degree is None, 'too many neighours ({0}) in molecule: {1}'.format(new_degree, s)
                 # bond_tensor = padaxis(bond_tensor, new_degree, axis=2)
                 # edge_tensor = padaxis(edge_tensor, new_degree, axis=2, pad_value=-1)
-                print("throw_away ", mol_ix, s, file=sys.stderr)
-                throw_away.append(mol_ix)
-                throw_away_flag = True
-            if throw_away_flag: continue
+            #   print("throw_away ", mol_ix, s, file=sys.stderr)
+            #   throw_away.append(mol_ix)
+            #   throw_away_flag = True
+            #if throw_away_flag: continue
 
             # store bond features
             bond_features = np.array(feature.bond_features(bond), dtype=int)
@@ -127,17 +126,17 @@ def tensorise_smiles(smiles, max_degree=5, max_atoms=None, use_tqdm=False):
             connectivity_mat[a1_ix].append(a2_ix)
             connectivity_mat[a2_ix].append(a1_ix)
 
-        if throw_away_flag: continue
+        #if throw_away_flag: continue
 
         # store connectivity matrix
         for a1_ix, neighbours in enumerate(connectivity_mat):
             degree = len(neighbours)
             edge_tensor[mol_ix, a1_ix, : degree] = neighbours
 
-    if len(throw_away) > 0:
-        atom_tensor = np.delete(atom_tensor, throw_away, axis=0)
-        bond_tensor = np.delete(bond_tensor, throw_away, axis=0)
-        edge_tensor = np.delete(edge_tensor, throw_away, axis=0)
+#    if len(throw_away) > 0:
+#        atom_tensor = np.delete(atom_tensor, throw_away, axis=0)
+#        bond_tensor = np.delete(bond_tensor, throw_away, axis=0)
+#        edge_tensor = np.delete(edge_tensor, throw_away, axis=0)
     return torch.from_numpy(atom_tensor).float(), \
            torch.from_numpy(bond_tensor).float(), \
            torch.from_numpy(edge_tensor).long()
