@@ -59,6 +59,7 @@ def load_multiclass_csv(data_file, dem=",", target_name=None, sample=None):
         df = df[clms]
     df = df.apply(pd.to_numeric, errors='coerce')
     df = df.fillna(0) # otherwise conflicts with xuefeng's assignment
+    df = df.apply(np.abs) # otherwise different from previous results.
     if sample is not None:
         df = df.sample(sample) if isinstance(sample,int) else df.sample(frac=sample)
     return df.index, df.values, df.columns
