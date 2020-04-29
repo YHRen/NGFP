@@ -11,7 +11,7 @@ output_dir="../output/"
 logf=${data_file##*/}
 logf=${logf%.csv}${df}.log
 echo $data_file $logf
-python ../main_covid_xuefeng.py ${data_file} nfp \
+python ../main_covid_xf.py ${data_file} nfp \
        --output_dir ${output_dir} \
        --multiclass  \
        --target_name ${protein_name} \
