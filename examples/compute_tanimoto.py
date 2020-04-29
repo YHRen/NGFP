@@ -24,7 +24,7 @@ def process_data_folder(data_folder):
     input_dir = Path(data_folder)
     assert input_dir.exists() and input_dir.is_dir()
     dnames, mol_names, smls, nfps = [], [], [], []
-    files = list(input_dir.glob("**/*.csv"))
+    files = list(input_dir.glob("./*.csv"))
     files.sort() # for reproduction purpose
     for csv_file in files:
         with open(csv_file, 'r') as fp:
