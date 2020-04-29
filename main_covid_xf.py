@@ -106,17 +106,17 @@ def main(args):
     res = []
     for _ in range(RUNS):
         if args.define_split:
-            def get_idx_excluding(a_idx, exclude_idx):
-                msk = a_idx.iloc[:,0].isin(exclude_idx.iloc[:,0])
-                return a_idx[~msk]
             train_idx = pd.read_csv(args.define_split[0])
             valid_idx = pd.read_csv(args.define_split[1])
             test_idx  = pd.read_csv(args.define_split[2])
-            if len(args.define_split) > 3:
-                exclude_idx = pd.read_csv(args.define_split[3])
-                train_idx = get_idx_excluding(train_idx, exclude_idx)
-                valid_idx = get_idx_excluding(valid_idx, exclude_idx)
-                test_idx = get_idx_excluding(test_idx, exclude_idx)
+            #if len(args.define_split) > 3:
+            #    def get_idx_excluding(a_idx, exclude_idx):
+            #        msk = a_idx.iloc[:,0].isin(exclude_idx.iloc[:,0])
+            #        return a_idx[~msk]
+            #    exclude_idx = pd.read_csv(args.define_split[3])
+            #    train_idx = get_idx_excluding(train_idx, exclude_idx)
+            #    valid_idx = get_idx_excluding(valid_idx, exclude_idx)
+            #    test_idx = get_idx_excluding(test_idx, exclude_idx)
             train_idx, valid_idx, test_idx = train_idx.to_numpy().squeeze(),\
                 valid_idx.to_numpy().squeeze(), test_idx.to_numpy().squeeze()
             print(train_idx.shape, valid_idx.shape, test_idx.shape)
@@ -133,7 +133,6 @@ def main(args):
                                   shuffle=False, pin_memory=True)
         test_loader = DataLoader(Subset(data, test_idx), batch_size=BSZ,
                                  shuffle=False)
-        print(len(train_loader),len(valid_loader),len(test_loader))
         net = net()
         model_path = OUTPUT+str(_)
         net = net.fit(train_loader, valid_loader, epochs=N_EPOCH,
@@ -179,10 +178,13 @@ if __name__ == '__main__':
                         type=int)
     parser.add_argument("--split_seed", type=int,
                         help="random seed for splitting dataset")
-    parser.add_argument("--define_split", type=str, nargs=4,
-                        metavar=('train_idx', 'valid_idx', 'test_idx',
-                                 'exclude_idx'),
+    parser.add_argument("--define_split", type=str, nargs=3,
+                        metavar=('train_idx', 'valid_idx', 'test_idx'),
                         help="train_index, valid_index and test_index")
+#    parser.add_argument("--define_split", type=str, nargs=4,
+#                        metavar=('train_idx', 'valid_idx', 'test_idx',
+#                                 'exclude_idx'),
+#                        help="train_index, valid_index and test_index")
     parser.add_argument("--use_tqdm", action="store_true",
                         help="show progress bar")
     parsed_args = parser.parse_args()
