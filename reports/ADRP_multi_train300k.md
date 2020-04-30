@@ -2,34 +2,43 @@
 
 note: baseline model is using traditional fingerprint and a NN model.
 
-### MSE
-target             | baseline test-loss (mse) | NFP test-loss (mse) |
-|------------------|--------------------------|---------------------|
-|ADRP-ADPR_pocket1 | 0.69                     | 0.6180              |
-|ADRP-ADPR_pocket5 | 0.31                     | 0.2624              |
-|ADRP_pocket1      | 0.42                     | 0.3608              |
-|ADRP_pocket12     | 0.39                     | 0.3558              |
-|ADRP_pocket13     | 0.57                     | 0.5267              |
+### MSE  :arrow_down: 
+target             | baseline | NFP    |
+|------------------|----------|--------|
+|ADRP-ADPR_pocket1 | 0.69     | 0.6180 |
+|ADRP-ADPR_pocket5 | 0.31     | 0.2624 |
+|ADRP_pocket1      | 0.42     | 0.3608 |
+|ADRP_pocket12     | 0.39     | 0.3558 |
+|ADRP_pocket13     | 0.57     | 0.5267 |
 
 ### R2 Score
-| target              | baseline R2 score | NPF R2 score |
-|---------------------|-------------------|--------------|
-| ADRP-ADPR_pocket1   | 0.71              | 0.7411       |
-| ADRP-ADPR_pocket5   | 0.75              | 0.7932       |
-| ADRP_pocket1        | 0.65              | 0.7033       |
-| ADRP_pocket12       | 0.63              | 0.6621       |
-| ADRP_pocket13       | 0.66              | 0.6920       |
+| target            | baseline  | NFP    |
+|-------------------|-----------|--------|
+| ADRP-ADPR_pocket1 | 0.71      | 0.7411 |
+| ADRP-ADPR_pocket5 | 0.75      | 0.7932 |
+| ADRP_pocket1      | 0.65      | 0.7033 |
+| ADRP_pocket12     | 0.63      | 0.6621 |
+| ADRP_pocket13     | 0.66      | 0.6920 |
 
 ### Pearson Correlation 
-| target              | corr coef |   corr coef |
-|---------------------|-----------|-------------|
-| ADRP-ADPR_pocket1   | 0.84      |      0.8615 |
-| ADRP-ADPR_pocket5   | 0.87      |      0.8917 |
-| ADRP_pocket1        | 0.81      |      0.8396 |
-| ADRP_pocket12       | 0.8       |      0.8138 |
-| ADRP_pocket13       | 0.81      |      0.8338 |
+| target            | baseline    | NFP    |
+|-------------------|-------------|--------|
+| ADRP-ADPR_pocket1 | 0.84        | 0.8615 |
+| ADRP-ADPR_pocket5 | 0.87        | 0.8917 |
+| ADRP_pocket1      | 0.81        | 0.8396 |
+| ADRP_pocket12     | 0.8         | 0.8138 |
+| ADRP_pocket13     | 0.81        | 0.8338 |
 
-### Notes
+### Concordance Index :arrow_up:
+
+| target            | baseline    | NFP      |
+|-------------------|-------------|----------|
+| ADRP-ADPR_pocket1 | 0.8229      | 0.8343   |
+| ADRP-ADPR_pocket5 | 0.8605      | 0.8774   |
+| ADRP_pocket1      | 0.8051      | 0.8096   |
+| ADRP_pocket12     | 0.7935      | 0.7925   |
+| ADRP_pocket13     | 0.8006      | 0.8048   |
+
 
 #### For reproducibility
 

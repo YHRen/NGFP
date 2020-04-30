@@ -158,3 +158,7 @@ if __name__ == "__main__":
     print(table)
     output_df.to_csv('./eval.csv', index=False, float_format="%.4f")
 
+    prd_df = pd.DataFrame.from_dict({k:prd[:,idx] for idx,k in enumerate(KEYS)})
+    gt_df = pd.DataFrame.from_dict({k:gt[:,idx] for idx,k in enumerate(KEYS)})
+    prd_df.to_csv('./predict.csv', index=False)
+    gt_df.to_csv('./ground_truth.csv', index=False)
