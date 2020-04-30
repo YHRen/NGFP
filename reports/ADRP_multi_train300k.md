@@ -11,7 +11,7 @@ target             | baseline | NFP    |
 |ADRP_pocket12     | 0.39     | 0.3558 |
 |ADRP_pocket13     | 0.57     | 0.5267 |
 
-### R2 Score
+### R2 Score :arrow_up:
 | target            | baseline  | NFP    |
 |-------------------|-----------|--------|
 | ADRP-ADPR_pocket1 | 0.71      | 0.7411 |
@@ -20,7 +20,7 @@ target             | baseline | NFP    |
 | ADRP_pocket12     | 0.63      | 0.6621 |
 | ADRP_pocket13     | 0.66      | 0.6920 |
 
-### Pearson Correlation 
+### Pearson Correlation :arrow_up:
 | target            | baseline    | NFP    |
 |-------------------|-------------|--------|
 | ADRP-ADPR_pocket1 | 0.84        | 0.8615 |
