@@ -42,12 +42,31 @@ def load_csv(data_file, target_name, dem=",", sample=None):
     return df['smiles'], df[target_name].values
 
 
-def load_multiclass_csv(data_file, dem=",", sample=None):
+def load_multiclass_csv(data_file, dem=",", target_name=None, sample=None):
+    """ load csv file and use columns starting with the <target_name> """
+    ## TODO: add exclusive index
     df = pd.read_csv(data_file, delimiter=dem)
-    df = df.set_index('smiles')
+    if 'smiles' in df.columns:
+        df = df.set_index('smiles')
+    elif 'SMILES' in df.columns:
+        df = df.set_index('SMILES')
+    elif 'canonical_smiles' in df.columns:
+        df = df.set_index('canonical_smiles')
+    else:
+        raise RuntimeError("No smile column detected")
+        return None
     if "name" in df.columns: df = df.drop(columns=["name"])
+    if target_name:
+        clms = [clm for clm in df.columns if clm.startswith(target_name)]
+        clms.sort()
+        if len(clms) == 0:
+            raise RuntimeError(f"{target_name} not in the dataset")
+            return
+        df = df[clms]
     df = df.apply(pd.to_numeric, errors='coerce')
-    df = df.dropna()
+    assert df.isnull().values.any() == False
+    df = df.fillna(0) # otherwise conflicts with xuefeng's assignment
+    df = df.apply(np.abs) # otherwise different from previous results.
     assert df.shape[0] > 0
     if sample is not None:
         df = df.sample(sample) if isinstance(sample,int) else df.sample(frac=sample)
@@ -66,7 +85,8 @@ def main(args):
     OUTPUT = args.output_dir+DATAFILE.stem
     if args.multiclass:
         SMILES, TARGET, KEYS = load_multiclass_csv(DATAFILE, dem=args.delimiter,
-                                               sample=args.sample)
+                                                   target_name=args.target_name,
+                                                   sample=args.sample)
         print(f"column names {DATAFILE.stem}: {KEYS.tolist()}")
         NCLASS = len(KEYS)
         OUTPUT+="multi_class"

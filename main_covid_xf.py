@@ -47,14 +47,24 @@ def load_csv(data_file, target_name, dem=",", sample=None):
 
 
 def load_multiclass_csv(data_file, dem=",", target_name=None, sample=None):
+    """ load csv file and use columns starting with the <target_name> """
     df = pd.read_csv(data_file, delimiter=dem)
-    df = df.set_index('smiles')
+    if 'smiles' in df.columns:
+        df = df.set_index('smiles')
+    elif 'SMILES' in df.columns:
+        df = df.set_index('SMILES')
+    elif 'canonical_smiles' in df.columns:
+        df = df.set_index('canonical_smiles')
+    else:
+        raise RuntimeError("No smile column detected")
+        return None
+
     if "name" in df.columns: df = df.drop(columns=["name"])
     if target_name:
         clms = [clm for clm in df.columns if clm.startswith(target_name)]
         clms.sort()
         if len(clms) == 0:
-            raise RunTimeError(f"{target_name} not in the dataset")
+            raise RuntimeError(f"{target_name} not in the dataset")
             return
         df = df[clms]
     df = df.apply(pd.to_numeric, errors='coerce')
