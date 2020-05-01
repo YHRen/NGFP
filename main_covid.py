@@ -36,6 +36,7 @@ def normalize_array(A):
 
 
 def load_csv(data_file, target_name, dem=",", sample=None):
+    """ obsolete """
     df = pd.read_csv(data_file, delimiter=dem)
     if sample is not None:
         df = df.sample(sample) if isinstance(sample,int) else df.sample(frac=sample)
@@ -83,19 +84,15 @@ def main(args):
     DATAFILE = Path(args.datafile)
     assert DATAFILE.exists(), DATAFILE
     OUTPUT = args.output_dir+DATAFILE.stem
-    if args.multiclass:
-        SMILES, TARGET, KEYS = load_multiclass_csv(DATAFILE, dem=args.delimiter,
-                                                   target_name=args.target_name,
-                                                   sample=args.sample)
-        print(f"column names {DATAFILE.stem}: {KEYS.tolist()}")
-        NCLASS = len(KEYS)
-        OUTPUT+="multi_class"
+    SMILES, TARGET, KEYS = load_multiclass_csv(DATAFILE, dem=args.delimiter,
+                                               target_name=args.target_name,
+                                               sample=args.sample)
+    print(f"column names {DATAFILE.stem}: {KEYS.tolist()}")
+    NCLASS = len(KEYS)
+    if args.target_name:
+        OUTPUT += args.target_name
     else:
-        SMILES, TARGET = load_csv(DATAFILE,
-                                  args.target_name if args.target_name else 'reg',
-                                  dem=args.delimiter, sample=args.sample)
-        NCLASS = 1
-        OUTPUT+=args.target_name
+        OUTPUT += "multi_class"
 
     def build_data_net(args, target):
         if args.fp_method == FP_METHODS[0]:
@@ -162,11 +159,8 @@ if __name__ == '__main__':
                         default=5, type=int)
     parser.add_argument("-l", "--lr", help="learning rate",
                         default=1e-3, type=float)
-    target_mode = parser.add_mutually_exclusive_group()
-    target_mode.add_argument("--target_name", type=str,
+    parser.add_argument("--target_name", type=str,
                         help="specify the column name")
-    target_mode.add_argument("--multiclass", action="store_true",
-                        help="specify if multiclass")
     parser.add_argument("--sample", help="train on a sample of the dataset",
                         type=int)
     parser.add_argument("--split_seed", type=int,
