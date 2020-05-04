@@ -115,6 +115,8 @@ def main(args):
         norm_func, restore_func = normalize_array(
             np.concatenate([TARGET[train_idx], TARGET[valid_idx]], axis=0))
         target = norm_func(TARGET)
+        if target.shape[1] == 1: 
+            target = np.squeeze(target)
         data, net = build_data_net(args, target)
         train_loader = DataLoader(Subset(data, train_idx), batch_size=BSZ,
                                   shuffle=True, drop_last=True, pin_memory=True)

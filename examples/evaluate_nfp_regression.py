@@ -46,8 +46,16 @@ def split_train_valid_test(n, p=0.8, v=0.1, seed=None):
 
 def load_multiclass_csv(data_file, dem=",", target_name=None, sample=None):
     df = pd.read_csv(data_file, delimiter=dem)
-    df = df.set_index('smiles')
     if "name" in df.columns: df = df.drop(columns=["name"])
+    if 'smiles' in df.columns:
+        df = df.set_index('smiles')
+    elif 'SMILES' in df.columns:
+        df = df.set_index('SMILES')
+    elif 'canonical_smiles' in df.columns:
+        df = df.set_index('canonical_smiles')
+    else:
+        raise RuntimeError("No smile column detected")
+        return None
     if target_name:
         clms = [clm for clm in df.columns if clm.startswith(target_name)]
     else:
@@ -111,6 +119,8 @@ if __name__ == "__main__":
                         help="random seed for splitting dataset")
     parser.add_argument("--model", help="choose the pretrained model file for nfp\
                         method.", type=str, required=True)
+    parser.add_argument("--target_name", type=str,
+                        help="specify the column name")
     parser.add_argument("--tqdm", help="use tqdm progress bar",
                         action="store_true")
     args = parser.parse_args()
@@ -118,10 +128,12 @@ if __name__ == "__main__":
 
     INPUT = Path(args.input_file)
     if not INPUT.exists(): raise FileNotFoundError
-    SMILES, TARGET, KEYS = load_multiclass_csv(INPUT)
+    SMILES, TARGET, KEYS = load_multiclass_csv(INPUT,
+                                               target_name=args.target_name)
     print(f"column names {INPUT.stem} with {len(KEYS)} columns:\
           {KEYS.tolist()}")
     NCLASS = len(KEYS)
+    print(f"NCLASS: {NCLASS}")
     net = try_load_net(args.model)
     train_idx, valid_idx, test_idx = \
         split_train_valid_test(len(TARGET), seed=args.split_seed)
@@ -139,7 +151,10 @@ if __name__ == "__main__":
     res_cor = []
     res_mae = []
     res_mse = []
+    if len(prd.shape) == 1: # for single class
+        prd = np.expand_dims(prd, 1)
     for idx, k in enumerate(KEYS):
+        print(f"idx, k, {idx}, {k}, {prd.shape}, {gt.shape}")
         gt_i, prd_i = gt[:, idx], prd[:, idx]
         res_r2.append(r2_score(gt_i, prd_i))
         res_cor.append(pearsonr(gt_i, prd_i)[0])
