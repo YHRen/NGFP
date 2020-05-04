@@ -1,8 +1,13 @@
-# Comparing Testing MSE with baseline model
+# Comparing NFP with a baseline model on regression tasks
 
-note: baseline model is using traditional fingerprint and a NN model.
+The regression task is to predict the docking score of molecues on various
+sites of the target protein ADRP.  Different from Neural Fingerprint (NFP) the
+baseline model uses traditional fingerprint to encode a molecue followed by a
+NN model. The baseline model results are provided by the team member Xuefeng
+(ANL).
 
-### MSE  :arrow_down: 
+### MSE (the lower the better)  :arrow_down: 
+
 target             | baseline | NFP    |
 |------------------|----------|--------|
 |ADRP-ADPR_pocket1 | 0.69     | 0.6180 |
@@ -11,7 +16,7 @@ target             | baseline | NFP    |
 |ADRP_pocket12     | 0.39     | 0.3558 |
 |ADRP_pocket13     | 0.57     | 0.5267 |
 
-### R2 Score :arrow_up:
+### R2 Score (the higher the better) :arrow_up:
 | target            | baseline  | NFP    |
 |-------------------|-----------|--------|
 | ADRP-ADPR_pocket1 | 0.71      | 0.7411 |
@@ -20,7 +25,8 @@ target             | baseline | NFP    |
 | ADRP_pocket12     | 0.63      | 0.6621 |
 | ADRP_pocket13     | 0.66      | 0.6920 |
 
-### Pearson Correlation :arrow_up:
+### Pearson Correlation (the higher the better) :arrow_up:
+
 | target            | baseline    | NFP    |
 |-------------------|-------------|--------|
 | ADRP-ADPR_pocket1 | 0.84        | 0.8615 |
@@ -29,7 +35,7 @@ target             | baseline | NFP    |
 | ADRP_pocket12     | 0.8         | 0.8138 |
 | ADRP_pocket13     | 0.81        | 0.8338 |
 
-### Concordance Index :arrow_up:
+### Concordance Index (the higher the better) :arrow_up:
 
 | target            | baseline    | NFP      |
 |-------------------|-------------|----------|
