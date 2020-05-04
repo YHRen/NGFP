@@ -7,10 +7,13 @@ model_urls={'Mpro':
             "6vww":
             "https://github.com/YHRen/NGFP/blob/master/pretrained/6vww_sample20kmulti_class.pkg?raw=true"}
 
-
+supported_proteins = set(model_urls.keys())
 def nfp_net(pretrained=False, protein="Mpro", progress=True, **kwargs):
     r"""Pretrained NFP model
     """
+    assert protein in supported_proteins, \
+        f"choose protein from {supported_proteins}"
+
     if pretrained:
         model = load_url(model_urls[protein], progress=progress)
     else:
