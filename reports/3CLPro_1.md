@@ -1,6 +1,6 @@
 # 3CLPro_1 Regression task
 
-This is trained on the 720k dataset. 
+This is trained on the 720k dataset, `3CLPro_1_cat_sorted.csv` released on April 27th. 
 
 | Target       | Concordance Index | R2 Score     | Pearson Corr. | MAE      | MSE      |
 |--------------|-------------------|--------------|---------------|----------|----------|
