@@ -5,7 +5,6 @@ from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem
 dev = T.device('cuda') if T.cuda.is_available() else T.device('cpu')
 
-
 def temporal_padding(x, paddings=(1, 0), pad_value=0):
     """Pad the middle dimension of a 3D tensor
         with `padding[0]` values left and `padding[1]` values right.

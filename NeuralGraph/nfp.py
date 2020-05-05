@@ -8,7 +8,7 @@ model_urls={'Mpro':
             "https://github.com/YHRen/NGFP/blob/master/pretrained/6vww_sample20kmulti_class.pkg?raw=true"}
 
 supported_proteins = set(model_urls.keys())
-def nfp_net(pretrained=False, protein="Mpro", progress=True, **kwargs):
+def nfp_net(pretrained=True, protein="Mpro", progress=True, **kwargs):
     r"""Pretrained NFP model
     """
     assert protein in supported_proteins, \
