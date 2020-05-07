@@ -8,6 +8,7 @@ python ../generate_nfp.py \
     -o ../output/${OUTPUT}/ `# output directory`\
     --model ../pretrained/MPro_mergedmulti_class.pkg \
     --chunk_size ${CHUNK_SZ} `# for demo purpose`\
+    --batch_size 32 \
     --tqdm \
     --dataset_name ${OUTPUT} # if not defined, will derive from input
     #--model ./pretrained/MPro_mergedmulti_class.pkg \
