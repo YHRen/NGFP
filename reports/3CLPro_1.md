@@ -10,7 +10,6 @@ This is trained on the 720k dataset, `3CLPro_1_cat_sorted.csv` released on April
 * MAE: Mean Absolute Error
 * MSE: Mean Squared Error
 
-Comparing NFP with a baseline model on regression tasks
 
 
 ### For reproducibility
@@ -24,6 +23,7 @@ column names 3CLPro_1_cat_sorted: ['Chemgauss4']
 split_sig: 3e8638cc224ab0c5d34a55a3daaf013021c6ca9b84232a89c804bf2aa28a3c1a
 ```
 
+<!---
 ### For comparison
 
 This result is copy-pasted from Xuefeng's baseline model on v3.1 release (300k data).
@@ -31,4 +31,4 @@ This result is copy-pasted from Xuefeng's baseline model on v3.1 release (300k d
 | Target                | Concordance Index     | R2 Score         | Pearson Corr.     | MSE          |
 |-----------------------|-----------------------|------------------|-------------------|--------------|
 | 3CLPro_pocket1_round1 | 0.8221                | 0.7025           | 0.8386            | 0.4606       |
-
+--->

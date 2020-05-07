@@ -10,7 +10,6 @@ This is trained on the 720k dataset, `plpro_1_cat_sorted.csv` released on April 
 * MAE: Mean Absolute Error
 * MSE: Mean Squared Error
 
-Comparing NFP with a baseline model on regression tasks
 
 ### For reproducibility
 
