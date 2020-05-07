@@ -68,7 +68,8 @@ def load_multiclass_csv(data_file, dem=",", target_name=None, sample=None):
 
 
 #dfile = "./dataset/covid19/drug_screening/3CLPro_1_cat_sorted_sample.csv"
-dfile = "./dataset/covid19/drug_screening/3CLPro_1_cat_sorted.csv"
+#dfile = "./dataset/covid19/drug_screening/3CLPro_1_cat_sorted.csv"
+dfile = "./dataset/covid19/drug_screening/plpro_1_cat_sorted.csv"
 res = load_multiclass_csv(dfile, target_name="Chem")
 if len(res) > 0:
     sr = pd.Series(sorted(list(res)))
