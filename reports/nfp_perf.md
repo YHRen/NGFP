@@ -1,7 +1,12 @@
 # Performance analysis of NFP generation code
 
-Using pretrained model to generate NFP. On my 8700k with 1080 GPU, it can reach 750 its/s, but on a server-grade xeon CPU, it is only 600 its/s.
+## Improvement of SMILE to tensor conversion ~15% improvement
 
+![before](../figs/before_optimization.png)
+![after](../figs/after_optim_featurepy.png)
+
+
+Using pretrained model to generate NFP. On my 8700k with 1080 GPU, it can reach 750 its/s, but on a server-grade xeon CPU, it is only 600 its/s.
 
 ### On 8700k with GTX 1080
 ```
