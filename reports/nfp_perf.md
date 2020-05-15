@@ -13,6 +13,7 @@ Using pretrained model to generate NFP. On my 8700k with 1080 GPU, it can reach 
 
 ![parallel](../figs/after_parallel.png)
 
+Rewrite the preprocessing part to use parallel preprocessing. Remove the index map in the original code. Now it can reach close to 2000 its/s on my 8700k machine with 6 core.
 
 ### On 8700k with GTX 1080
 ```
