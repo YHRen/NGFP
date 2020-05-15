@@ -9,6 +9,11 @@
 
 Using pretrained model to generate NFP. On my 8700k with 1080 GPU, it can reach 750 its/s, but on a server-grade xeon CPU, it is only 600 its/s.
 
+## Improvement using parallel preprocessing ~3 fold speedup with 6 cores
+
+![parallel](../figs/after_parallel.png)
+
+
 ### On 8700k with GTX 1080
 ```
 --------------------------------------------------------------------------------
