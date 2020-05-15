@@ -7,6 +7,7 @@ from torch import optim
 import time
 from .util import dev, calc_neural_fp
 from .preprocessing import tensorise_smiles
+from .preprocessing_par import tensorise_smiles as ts_mp
 
 class NeuralFingerPrint(nn.Module):
     def __init__(self, hid_dim, max_degree=6,\
@@ -160,7 +161,7 @@ class QSAR(nn.Module):
         score = T.cat(score, dim=0).numpy()
         return score
 
-    def calc_nfp(self, smiles, is_float16=True):
+    def calc_nfp(self, smiles, worker_pool=None, is_float16=True):
         """ Calculate the neural fingerprint (nfp) based on the current neural
         network.
 
@@ -194,7 +195,10 @@ class QSAR(nn.Module):
             if len(cache) > 0:
                 res.append(net.calc_nfp(cache))
         """
-        tmp = tensorise_smiles(smiles)
+        if not worker_pool:
+            tmp = tensorise_smiles(smiles)
+        else:
+            tmp = ts_mp(smiles, worker_pool=worker_pool)
         res = calc_neural_fp(tmp, self)
         if is_float16:
             res = np.float16(res)

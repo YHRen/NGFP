@@ -3,6 +3,7 @@ import argparse
 import numpy as np
 import itertools as its
 from functools import partial
+import multiprocessing as mp
 from tqdm import tqdm
 from pathlib import Path, PurePath
 from warnings import warn
@@ -54,13 +55,13 @@ def is_valid_smile_for_NFP(sml, max_degree=6):
         atoms = mol.GetAtoms()
     except:
         warn(f"Not a valid SMILE: {sml}")
-        return False
+        return None
 
     for atom in atoms:
         if atom.GetDegree() >= max_degree:
             warn(f"larger than max degree {max_degree} {sml}")
-            return False
-    return True
+            return None
+    return mol
 
 
 def get_file_name(line_id, CHUNK_SZ, OUTPUT):
@@ -86,6 +87,9 @@ if __name__ == "__main__":
                         default=1000000", type=int, default=1000000)
     parser.add_argument("-b", "--batch_size", help="batch size for processing \
                         through NFP", type=int, default=32)
+    parser.add_argument("-n", "--num_workers", type=int, default=1,
+                        help="number of workers. default 1 core.\
+                        0 use all cores, ")
     parser.add_argument("--dataset_name", help="specify the stem of output\
                         files", type=str)
     parser.add_argument("--tqdm", help="use tqdm progress bar",
@@ -106,6 +110,12 @@ if __name__ == "__main__":
     MISSING_DIR = OUTPUT_DIR/"missing"
     MISSING_DIR.mkdir(exist_ok=True)
 
+    worker_pool = None
+    if args.num_workers == 0:
+        worker_pool = mp.Pool(mp.cpu_count()//2)
+    elif args.num_workers > 1:
+        worker_pool = mp.Pool(args.num_workers)
+
 
     ds_names, mol_names, smls, fps = [], [], [], []
     cache, missings = [], []
@@ -119,7 +129,7 @@ if __name__ == "__main__":
             last_line_id = line_id
             if osc() and len(cache) > 0:
                 # have enough strings in the batch, go through nfp.
-                fps.append(net.calc_nfp(cache))
+                fps.append(net.calc_nfp(cache, worker_pool=worker_pool))
                 smls.extend(cache)
                 cache = []
             ds_name, mol_name, sml = canonical_line_parser(line)
@@ -171,3 +181,6 @@ if __name__ == "__main__":
             with open(MISSING_DIR/filename, 'w') as fw:
                 for ms_ in missings:
                     fw.write(ms_)
+        if worker_pool:
+            worker_pool.close()
+            worker_pool.join()

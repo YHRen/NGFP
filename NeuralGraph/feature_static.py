@@ -39,9 +39,7 @@ BOND_MAP = {k: v for k, v in zip(BONDS, range(len(BONDS)))}
 #       UNKOWN_BOND = 3  # same as aromatic to circumvent crash
 
 NUM_ATOM_FEATURES = sum(LENS)
-ATOM_ENCODE_TEMPLATE = np.zeros(NUM_ATOM_FEATURES, dtype='int8')
 NUM_BOND_FEATURES = len(BONDS)+2  # conjugate, inRing
-BOND_ENCODE_TEMPLATE = np.zeros(NUM_BOND_FEATURES, dtype='int8')
 
 #print(sum(LENS))
 #print(ATOM_MAP)
@@ -52,7 +50,6 @@ BOND_ENCODE_TEMPLATE = np.zeros(NUM_BOND_FEATURES, dtype='int8')
 #print(UNKOWN_HYBRIDIZATION)
 
 def atom_features(atom):
-    #res = np.copy(ATOM_ENCODE_TEMPLATE)
     res = np.zeros(NUM_ATOM_FEATURES, dtype='int8')
     res[ATOM_MAP.get(atom.GetSymbol(), len(ATOMS))] = 1
     res[DEGREE_MAP[atom.GetDegree()]] = 1
@@ -67,7 +64,6 @@ def atom_position(atom, conformer):
     return conformer.GetPositions()[atom.GetIndex()]
 
 def bond_features(bond):
-    #res = np.copy(BOND_ENCODE_TEMPLATE)
     res = np.zeros(NUM_BOND_FEATURES, dtype='int8')
     bt = bond.GetBondType()
     if bt in BOND_MAP.keys():

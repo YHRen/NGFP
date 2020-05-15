@@ -1,6 +1,7 @@
 import numpy as np
 from rdkit import Chem
-from . import feature_static as feature  # more efficient implementation
+#from . import feature_static as feature  # more efficient implementation
+from . import feature_static as feature
 from tqdm import tqdm
 import torch
 import sys
