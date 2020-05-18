@@ -1,37 +1,63 @@
-# Performance analysis of NFP generation code
+# Performance analysis and optimization of NFP generation code
+
+## Performance Optimization
 
 This work aims to improve the speed of generating neural fingerprints.
 I will use the machine with a 8700K CPU (6-core) and a GTX-1080 GPU as a testbed.
 The test dataset of DUD containing about 100,000 SMILE strings.
 The DUD dataset has been included in this repo: `./dataset/canonical_ANL/DUD.csv`.
 
-## Performance using the original NGFP code
+### Performance using the original NGFP code
 ![before](../figs/before_optimization.png)
 
-The cProfile shows most of the time on the CPU side is spent in the function `preprocessing`, which involves converting SMILE strings into tensorized graph representations.
+The cProfile shows most of the time on the CPU side is spent in the module `preprocessing`, and `tensorise_smiles` function to be more specific, which involves converting SMILE strings into tensorized graph representations.
 
-## Improvement of SMILE to tensor conversion ~15% improvement
+### ~15% Improvement by rewriting `atom_features` etc. 
 ![after](../figs/after_optim_featurepy.png)
 
 After inspecting the original source code, I found several places can be
-optimized.  I re-implemented the `feature.py` as
+optimized.  I reimplemented the module `feature.py` as
 [`feature_static.py`](https://github.com/YHRen/NGFP/blob/master/NeuralGraph/feature_static.py).
 The new implementation has the same API and can be used as a drop-in replacement: `import feature_static as feature`. 
-The re-implemented functions are 4 times faster than the previous one, and brings ~15% speedup overall.
+The reimplemented functions are 4 times faster than the previous one, and brings ~15% speedup overall.
 
 Comparing with the previous profiling results, the `feature.py` (purple color not labeled) consumes much less time. But the `preprocessing.py` still takes a long time to run.
 
-## Improvement using parallel preprocessing ~3 fold speedup with 6 cores
+### ~3 fold speedup using parallel preprocessing
 
 ![parallel](../figs/after_parallel.png)
 
 This part of optimization uses `multiprocessing` to parallel the workload of
 tensorising SMILE strings. Using 6 cpu-cores of my machine, the processing time
-has been reduce from 97 sec to 27 sec. Overall, it brings about 3 fold speedup.
+has been reduced from 97 sec to 27 sec. Overall, it brings about 3 fold speedup.
 The parallel implementation has been included in this repo:
 `preprocessing_par.py`](https://github.com/YHRen/NGFP/blob/master/NeuralGraph/preprocessing_par.py) 
 
+I wrote a perf script to scan through different combinations of `batch_size` and `num_workers`:
+
+```
+⇒  bash run_gen_nfp_perf.sh
+worker 6 bsz 256
+99782it [00:51, 1927.24it/s]
+worker 6 bsz 512
+99782it [00:52, 1911.00it/s]
+worker 6 bsz 1024
+99782it [00:52, 1895.56it/s]
+worker 6 bsz 2048
+99782it [00:55, 1787.23it/s]
+worker 12 bsz 256
+99782it [00:51, 1928.08it/s]
+worker 12 bsz 512
+99782it [00:50, 1959.26it/s]
+worker 12 bsz 1024
+42429it [00:22, 1898.37it/s]
+```
+
 Now, the validation (orange color) of the SMILE strings becomes compatible. 
+
+### TO BE CONTINUED...
+
+
 
 ### Supplementary INFO: Initial bottleneck analysis
 On 8700k with GTX 1080
