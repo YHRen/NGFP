@@ -31,7 +31,7 @@ This part of optimization uses `multiprocessing` to parallel the workload of
 tensorising SMILE strings. Using 6 cpu-cores of my machine, the processing time
 has been reduced from 97 sec to 27 sec. Overall, it brings about 3 fold speedup.
 The parallel implementation has been included in this repo:
-`preprocessing_par.py`](https://github.com/YHRen/NGFP/blob/master/NeuralGraph/preprocessing_par.py) 
+[`preprocessing_par.py`](https://github.com/YHRen/NGFP/blob/master/NeuralGraph/preprocessing_par.py) 
 
 I wrote a perf script to scan through different combinations of `batch_size` and `num_workers`:
 
