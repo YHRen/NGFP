@@ -1,20 +1,40 @@
 # Performance analysis of NFP generation code
 
-## Improvement of SMILE to tensor conversion ~15% improvement
+This work aims to improve the speed of generating neural fingerprints.
+I will use the machine with a 8700K CPU (6-core) and a GTX-1080 GPU as a testbed.
+The test dataset of DUD containing about 100,000 SMILE strings.
+The DUD dataset has been included in this repo: `./dataset/canonical_ANL/DUD.csv`.
 
+## Performance using the original NGFP code
 ![before](../figs/before_optimization.png)
 
+The cProfile shows most of the time on the CPU side is spent in the function `preprocessing`, which involves converting SMILE strings into tensorized graph representations.
+
+## Improvement of SMILE to tensor conversion ~15% improvement
 ![after](../figs/after_optim_featurepy.png)
 
+After inspecting the original source code, I found several places can be
+optimized.  I re-implemented the `feature.py` as
+[`feature_static.py`](https://github.com/YHRen/NGFP/blob/master/NeuralGraph/feature_static.py).
+The new implementation has the same API and can be used as a drop-in replacement: `import feature_static as feature`. 
+The re-implemented functions are 4 times faster than the previous one, and brings ~15% speedup overall.
 
-Using pretrained model to generate NFP. On my 8700k with 1080 GPU, it can reach 750 its/s, but on a server-grade xeon CPU, it is only 600 its/s.
+Comparing with the previous profiling results, the `feature.py` (purple color not labeled) consumes much less time. But the `preprocessing.py` still takes a long time to run.
 
 ## Improvement using parallel preprocessing ~3 fold speedup with 6 cores
 
 ![parallel](../figs/after_parallel.png)
 
+This part of optimization uses `multiprocessing` to parallel the workload of
+tensorising SMILE strings. Using 6 cpu-cores of my machine, the processing time
+has been reduce from 97 sec to 27 sec. Overall, it brings about 3 fold speedup.
+The parallel implementation has been included in this repo:
+`preprocessing_par.py`](https://github.com/YHRen/NGFP/blob/master/NeuralGraph/preprocessing_par.py) 
 
-### On 8700k with GTX 1080
+Now, the validation (orange color) of the SMILE strings becomes compatible. 
+
+### Supplementary INFO: Initial bottleneck analysis
+On 8700k with GTX 1080
 ```
 --------------------------------------------------------------------------------
   Environment Summary
