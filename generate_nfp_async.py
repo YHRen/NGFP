@@ -1,21 +1,36 @@
-import torch
+## Require Python >=3.7
+
+import itertools
 import argparse
-import numpy as np
 import itertools as its
 import asyncio as aio
-import itertools
-from aio import Queue
-from functools import partial
-from collections import namedtuple
 import multiprocessing as mp
-from tqdm import tqdm
+from asyncio import Queue
+from collections import namedtuple
 from pathlib import Path, PurePath
+from functools import partial
 from warnings import warn
+
+import torch
+import numpy as np
+from tqdm import tqdm
 from rdkit import Chem, DataStructs
 from rdkit.Chem import AllChem
+
 from NeuralGraph.model import QSAR
 from NeuralGraph.nfp import nfp_net
 from NeuralGraph.util import dev, enlarge_weights
+
+import logging
+import sys
+
+logger = logging.getLogger("asyncio")
+logger.setLevel(logging.DEBUG)
+h1 = logging.StreamHandler(sys.stderr)
+h2 = logging.FileHandler(filename="/tmp/asyncio_debug.log")
+logger.addHandler(h1)
+logger.addHandler(h2)
+
 
 def try_load_net(model_file=None):
     if model_file is not None:
@@ -24,9 +39,9 @@ def try_load_net(model_file=None):
             net = torch.load(args.model, map_location=dev)
         else:
             raise FileNotFoundError
-    else: 
+    else:
         net = nfp_net(pretrained=True, protein="Mpro", progress=True)
-        if False: # random large weights
+        if False:  # random large weights
             net = QSAR(hid_dim=128, n_class=1, max_degree=6)
             enlarge_weights(net, -1e4, 1e4)
     return net.to(dev)
@@ -45,6 +60,7 @@ async def is_valid_smile_for_NFP(sml, max_degree=6):
     """
         NFP requires a valid smile string. 
     """
+    logger.debug(f"validating smile: {sml}")
     try:
         mol = Chem.MolFromSmiles(sml)
         atoms = mol.GetAtoms()
@@ -65,6 +81,7 @@ def get_file_name(line_id, CHUNK_SZ, OUTPUT):
                    str(line_id//CHUNK_SZ*CHUNK_SZ+CHUNK_SZ)))
     return res+".csv"
 
+
 async def read_file(fp, queue, num_workers=4):
     """ 
     fp: iteratable file pointer
@@ -73,29 +90,58 @@ async def read_file(fp, queue, num_workers=4):
     tasks = []
     cache = []
     for line_id, line in enumerate(fp):
+        logger.debug(f"read_file, line_id {line_id}")
         item = canonical_line_parser(line)  # (data_name, mol_name, smiles)
+        logger.debug(f"read_file, item {item}")
         t = aio.create_task(is_valid_smile_for_NFP(item[2]))
         tasks.append(t)
         cache.append(item)
         if len(tasks) == num_workers:
-            mols = aio.gather(*tasks, return_exceptions=True)
-            for c,m in zip(cache,mols):
+            logger.debug("takss, {len(tasks)}")
+            #mols = aio.gather(*tasks, return_exceptions=False)
+            mols = await aio.gather(*tasks)
+            logger.debug(f"mols, {mols}")
+            for c,m in zip(cache, mols):
+                logger.debug(f"c,m {c}, {m}")
                 await queue.put((c,m))
             tasks = []
             cache = []
 
     if len(tasks) > 0:
-        mols = aio.gather(*tasks, return_exceptions=True)
-        for c,m in zip(cache,mols):
-            await queue.put((c,m))
+        #mols = aio.gather(*tasks, return_exceptions=False)
+        mols = await aio.gather(*tasks)
+        for c, m in zip(cache, mols):
+            await queue.put((c, m))
 
     await queue.put(((None, None, None), None))  # mark the end of the queue
 
 
 async def process_cache(net, cache, pool):
+    logger.debug("processing cache")
     return net.calc_nfp(cache, worker_pool=pool)
 
-async def write_file(pars, valid_buffer, fps=None):
+
+async def write_file(filename, io_buffer, fps=None):
+    if fps:  # writing to output
+        with open(filename, 'w') as fw:
+            logger.debug(f"writing to valid file {filename}")
+            logger.debug(f"fps dims {len(fps), type(fps)}")
+            for fp in fps:
+                logger.debug(f"fp dims, fp type:  {len(fp), type(fp)}")
+
+            fps = np.concatenate(fps)
+            logger.debug(f"len = {len(io_buffer)}, {len(io_buffer[0])}, {fps.shape}")
+            logger.debug(f"{io_buffer[0]}")
+            for (d_, m_, s_), f_ in zip(io_buffer, fps):
+                logger.debug(f"1111{d_, m_, s_, f_}")
+                fp_ = ':'.join("{:.7f}".format(x) for x in f_)
+                fw.write(f"{d_},{m_},{s_},{fp_}\n")
+    else:  # write invalid SMILES to missing directory
+        with open(filename, 'w') as fw:
+            logger.debug(f"writing to miss file {filename}")
+            for d_, m_, s_ in zip(io_buffer):
+                fw.write(f"{d_},{m_},{s_}\n")
+
 
 async def consume(queue, pool, net, pars):
     """
@@ -106,18 +152,22 @@ async def consume(queue, pool, net, pars):
     fps, cache = [], []
     idx = 0
     io_futures = []
+    logger.debug("consumer")
     for idx in itertools.count():
         msg = await queue.get()
-        
+        logger.debug(f"get from queue {msg}")
+
         #  reached the end of the queue
-        if msg[0][0] == None and msg[0][2] == None:
+        if msg[0][0] is None and msg[0][2] is None:
+            logger.debug(f"reached the end")
             if len(cache) > 0:
-                fp = await aio.run(process_cache(net, cache, pool))
-                fps.append(fp)
+                fp = await aio.gather(process_cache(net, cache, pool))
+                logger.debug(f"fp type {type(fp)}, fp len = {len(fp)}")
+                fps.append(fp[0])
             fname = get_file_name(idx, pars.CHUNK_SZ, pars.OUTPUT)
-            
+
             if len(io_futures) > 0:
-                aio.gather(*io_futures)
+                await aio.gather(*io_futures)
                 io_futures = []
             t = aio.create_task(write_file(pars.OUTPUT_DIR/fname,
                                            valid_buffer, fps))
@@ -126,56 +176,61 @@ async def consume(queue, pool, net, pars):
                 t = aio.create_task(write_file(pars.MISSING_DIR/fname,
                                                missed_buffer))
                 io_futures.append(t)
-            aio.gather(*io_futures)
+            await aio.gather(*io_futures)
             return
 
-        # got a msg
-        if msg[1] == False:
+        # got a msg, put into the buffer
+        if not msg[1]:
+            logger.debug(f"putting into the missed buffer msg[0]")
             missed_buffer.append(msg[0])
         else:
+            logger.debug(f"putting into the valid buffer msg[0]")
             valid_buffer.append(msg[0])
+            logger.debug(f"putting into the SMILE cache msg[0][2]")
             cache.append(msg[0][2])
 
         # time to output
-        if (idx+1)%CHUNK_SZ==0:  # time to output
+        if (idx+1) % pars.CHUNK_SZ == 0:  # time to output
+            logger.debug(f"time to output idx = {idx}")
             if len(cache) > 0:
-                fp = await aio.run(process_cache(net, cache, pool))
+                fp = await aio.gather(process_cache(net, cache, pool))
                 cache = []
-                fps.append(fp)
+                logger.debug(f"fp type {type(fp)}, fp len = {len(fp)}")
+                fps.append(fp[0])
             fname = get_file_name(idx, pars.CHUNK_SZ, pars.OUTPUT)
             if len(io_futures) > 0: 
-                aio.gather(*io_futures)
+                await aio.gather(*io_futures)
                 io_futures = []
             t = aio.create_task(write_file(pars.OUTPUT_DIR/fname,
-                                       valid_buffer, fps))
+                                           valid_buffer, fps))
             io_futures.append(t)
             if len(missed_buffer) > 0:
                 t = aio.create_task(write_file(pars.MISSING_DIR/fname,
-                                           missed_buffer))
+                                               missed_buffer))
                 io_futures.append(t)
             fps, missed_buffer, valid_buffer = [], [], []
 
         # time to process on GPU
         if len(cache) >= pars.BATCH_SIZE:
-            fp = await aio.run(process_cache(net, cache, pool))
+            logger.debug(f"time to put to the gpu cache = {len(cache)}")
+            gpu_task = aio.create_task(process_cache(net, cache, pool))
+            #  hopefully it is not blocking
+            fp = await aio.gather(gpu_task)
+            logger.debug(f"got fps from gpu = {type(fp)}, {len(fp)}")
+            fps.append(fp[0])
             cache = []
-            fps.append(fp)
 
 
-def oscillator(period):
-    x, y = 1, period
-    def f():
-        nonlocal x
-        z = x==0
-        x = (x+1)%y
-        return z
-    return f
+async def main(pars, net):
+    queue = Queue(maxsize=int(pars.CHUNK_SZ*1.3))
+    with open(pars.INPUT, 'r') as fp:
+        fp = tqdm(fp) if args.tqdm else fp
+        io_task = aio.create_task(read_file(fp, queue, num_workers=4))
+        consumer = aio.create_task(consume(queue, worker_pool, net, pars))
 
+        await io_task
+        await consumer
 
-
-## TODO: create parameter class
-
-class Parameter():
 
 if __name__ == "__main__":
     """
@@ -204,19 +259,29 @@ if __name__ == "__main__":
                         action="store_true")
     args = parser.parse_args()
 
-    OUTPUT_DIR = Path(args.output_dir)
-    INPUT = Path(args.input_file)
-    OUTPUT = args.dataset_name
-    CHUNK_SZ = args.chunk_size
-    if not INPUT.exists(): raise FileNotFoundError
-    if OUTPUT is None: OUTPUT = INPUT.stem
-    if OUTPUT_DIR.exists() and OUTPUT_DIR.is_dir(): pass
+    Param = namedtuple('Param', ['CHUNK_SZ', 'OUTPUT', 'INPUT', 'OUTPUT_DIR',
+                                 'BATCH_SIZE', 'MISSING_DIR'])
+
+    pars = Param(
+        CHUNK_SZ=args.chunk_size,
+        OUTPUT_DIR=Path(args.output_dir),
+        INPUT=Path(args.input_file),
+        OUTPUT=args.dataset_name,
+        BATCH_SIZE=args.batch_size,
+        MISSING_DIR=None
+    )
+    if not pars.INPUT.exists():
+        raise FileNotFoundError
+    if pars.OUTPUT is None:
+        pars = pars._replace(OUTPUT=pars.INPUT.stem)
+    if pars.OUTPUT_DIR.exists() and pars.OUTPUT_DIR.is_dir():
+        pass
     else:
-        warn(f"dir {str(OUTPUT_DIR)} does not exists.")
-        warn(f"creating {str(OUTPUT_DIR)}...")
-        OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    MISSING_DIR = OUTPUT_DIR/"missing"
-    MISSING_DIR.mkdir(exist_ok=True)
+        warn(f"dir {str(pars.OUTPUT_DIR)} does not exists.")
+        warn(f"creating {str(pars.OUTPUT_DIR)}...")
+        pars.OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    pars = pars._replace(MISSING_DIR=pars.OUTPUT_DIR/"missing")
+    pars.MISSING_DIR.mkdir(exist_ok=True)
 
     worker_pool = None
     if args.num_workers == 0:
@@ -224,71 +289,10 @@ if __name__ == "__main__":
     elif args.num_workers > 1:
         worker_pool = mp.Pool(args.num_workers)
 
-
-    ds_names, mol_names, smls, fps = [], [], [], []
-    cache, missings = [], []
     net = try_load_net(args.model)
-    osc = oscillator(args.batch_size)
+    logger.debug("after loading net")
+    aio.run(main(pars, net), debug=True)
     
-    with open(INPUT, 'r') as in_f:
-        fp = tqdm(in_f) if args.tqdm else in_f 
-        last_line_id = 0
-        for line_id, line in enumerate(fp):
-            last_line_id = line_id
-            if osc() and len(cache) > 0:
-                # have enough strings in the batch, go through nfp.
-                fps.append(net.calc_nfp(cache, worker_pool=worker_pool))
-                smls.extend(cache)
-                cache = []
-            ds_name, mol_name, sml = canonical_line_parser(line)
-            if is_valid_smile_for_NFP(sml, 6):
-                ds_names.append(ds_name)
-                mol_names.append(mol_name)
-                cache.append(sml)
-            else:
-                missings.append(line)
-
-            if (line_id+1)%CHUNK_SZ == 0:
-                #output to file. for the rest in the cache
-                if len(cache) > 0:
-                    fps.append(net.calc_nfp(cache))
-                    smls.extend(cache)
-                    cache = []
-
-                #output file
-                filename = get_file_name(line_id, CHUNK_SZ, OUTPUT)
-                print("filename", filename)
-                # with open(OUTPUT_DIR/filename, 'w') as fw:
-                #     fps = np.concatenate(fps)
-                #     for d_, m_, s_, f_ in zip(ds_names, mol_names, smls, fps):
-                #         fp_ = ':'.join("{:.7f}".format(x) for x in f_)
-                #         fw.write(f"{d_},{m_},{s_},{fp_}\n")
-                # with open(MISSING_DIR/filename, 'w') as fw:
-                #     for ms_ in missings:
-                #         fw.write(ms_)
-                ds_names, mol_names, smls, fps, missings = [], [], [], [], []
-
-
-
-        #for the rest of lines
-        if (last_line_id+1)%CHUNK_SZ != 0:
-            if last_line_id > CHUNK_SZ:
-                filename = get_file_name(last_line_id, CHUNK_SZ, OUTPUT)
-            else: # small dataset 
-                filename = OUTPUT+".csv"
-            print("last filename:", filename)
-            if len(cache) > 0:
-                fps.append(net.calc_nfp(cache))
-                smls.extend(cache)
-                cache = []
-            #  with open(OUTPUT_DIR/filename, 'w') as fw:
-            #      fps = np.concatenate(fps)
-            #      for d_, m_, s_, f_ in zip(ds_names, mol_names, smls, fps):
-            #          fp_ = ':'.join("{:.7f}".format(x) for x in f_)
-            #          fw.write(f"{d_},{m_},{s_},{fp_}\n")
-            #  with open(MISSING_DIR/filename, 'w') as fw:
-            #      for ms_ in missings:
-            #          fw.write(ms_)
-        if worker_pool:
-            worker_pool.close()
-            worker_pool.join()
+    if worker_pool:
+        worker_pool.close()
+        worker_pool.join()
