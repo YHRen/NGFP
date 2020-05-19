@@ -21,7 +21,7 @@
 #     done
 # done
 
-bsz=32
+bsz=512
 worker=4
 # python generate_nfp_profile.py  \
 #     -i ./dataset/canonical_ANL/DUD.csv \
@@ -34,11 +34,11 @@ worker=4
 
 
 python generate_nfp_async.py  \
-    -i ./dataset/canonical_ANL/DUD_sample.csv \
+    -i ./dataset/canonical_ANL/DUD.csv \
     -o ./output/DUD/ \
     --model ./pretrained/MPro_mergedmulti_class.pkg \
-    --chunk_size 100 \
+    --chunk_size 10000 \
     --batch_size $bsz  \
     --num_workers $worker \
-    --tqdm --dataset_name DUD >bottle_neck.txt 2>log.err
+    --tqdm --dataset_name DUD >bottle_neck.txt
 

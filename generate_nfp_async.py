@@ -25,7 +25,7 @@ import logging
 import sys
 
 logger = logging.getLogger("asyncio")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.ERROR)
 h1 = logging.StreamHandler(sys.stderr)
 h2 = logging.FileHandler(filename="/tmp/asyncio_debug.log")
 logger.addHandler(h1)
@@ -291,7 +291,8 @@ if __name__ == "__main__":
 
     net = try_load_net(args.model)
     logger.debug("after loading net")
-    aio.run(main(pars, net), debug=True)
+    #aio.run(main(pars, net), debug=True)
+    aio.run(main(pars, net), debug=False)
     
     if worker_pool:
         worker_pool.close()
