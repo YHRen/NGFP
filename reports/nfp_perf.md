@@ -55,6 +55,10 @@ worker 12 bsz 1024
 
 Now, the validation (orange color) of the SMILE strings becomes compatible. 
 
+### No improvement using asyncio ... 
+
+![asyncio failed](../figs/after_async_failed.png)
+
 ### TO BE CONTINUED...
 
 
