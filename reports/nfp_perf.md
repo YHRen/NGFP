@@ -55,7 +55,7 @@ worker 12 bsz 1024
 
 Now, the validation (orange color) of the SMILE strings becomes compatible. 
 
-### improved 1 sec using async queue ... 
+### 10% improvement after using async queue ... 
 
 ![asyncio queue](../figs/after_async_queue.png)
 
@@ -85,7 +85,6 @@ worker 24 bsz 1024
 worker 24 bsz 2048
 99782it [00:45, 2196.99it/s]
 ```
-
 
 ### Supplementary INFO: Initial bottleneck analysis
 On 8700k with GTX 1080
