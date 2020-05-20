@@ -56,7 +56,7 @@ def canonical_line_parser(line, **kwargs):
     return data_name, mol_name, smiles
 
 
-async def is_valid_smile_for_NFP(sml, max_degree=6):
+def is_valid_smile_for_NFP(sml, max_degree=6):
     """
         NFP requires a valid smile string. 
     """
@@ -75,6 +75,10 @@ async def is_valid_smile_for_NFP(sml, max_degree=6):
     return True
 
 
+def is_valid_smile_for_NFP_wraper(smls, pool):
+    return pool.map(is_valid_smile_for_NFP, smls)
+
+
 def get_file_name(line_id, CHUNK_SZ, OUTPUT):
     if (line_id+1) < CHUNK_SZ: return OUTPUT
     res = '-'.join((OUTPUT, str(line_id//CHUNK_SZ*CHUNK_SZ),
@@ -82,37 +86,41 @@ def get_file_name(line_id, CHUNK_SZ, OUTPUT):
     return res+".csv"
 
 
-async def read_file(fp, queue, num_workers=4):
+#  async def read_file(fp, queue):
+#      """ 
+#      fp: iteratable file pointer
+#      queue: async queue
+#      """
+#      cache = []
+#      smls = []
+#      for line_id, line in enumerate(fp):
+#          logger.debug(f"read_file, line_id {line_id}")
+#          item = canonical_line_parser(line)  # (data_name, mol_name, smiles)
+#          logger.debug(f"read_file, item {item}")
+#          smls.append(item[2])
+#          cache.append(item)
+#          if len(smls) == worker_pool._processes:
+#              logger.debug("takss, {len(tasks)}")
+#              #mols = aio.gather(*tasks, return_exceptions=False)
+#              mols = is_valid_smile_for_NFP_wraper(smls, worker_pool)
+#              logger.debug(f"mols, {mols}")
+#              for c,m in zip(cache, mols):
+#                  logger.debug(f"c,m {c}, {m}")
+#                  await queue.put((c, m))
+#              cache = []
+#              smls = []
+
+
+async def read_file(fp, queue):
     """ 
     fp: iteratable file pointer
     queue: async queue
     """
-    tasks = []
-    cache = []
     for line_id, line in enumerate(fp):
         logger.debug(f"read_file, line_id {line_id}")
         item = canonical_line_parser(line)  # (data_name, mol_name, smiles)
-        logger.debug(f"read_file, item {item}")
-        t = aio.create_task(is_valid_smile_for_NFP(item[2]))
-        tasks.append(t)
-        cache.append(item)
-        if len(tasks) == num_workers:
-            logger.debug("takss, {len(tasks)}")
-            #mols = aio.gather(*tasks, return_exceptions=False)
-            mols = await aio.gather(*tasks)
-            logger.debug(f"mols, {mols}")
-            for c,m in zip(cache, mols):
-                logger.debug(f"c,m {c}, {m}")
-                await queue.put((c,m))
-            tasks = []
-            cache = []
-
-    if len(tasks) > 0:
-        #mols = aio.gather(*tasks, return_exceptions=False)
-        mols = await aio.gather(*tasks)
-        for c, m in zip(cache, mols):
-            await queue.put((c, m))
-
+        await queue.put((item, is_valid_smile_for_NFP(item[2])))
+    
     await queue.put(((None, None, None), None))  # mark the end of the queue
 
 
@@ -166,17 +174,17 @@ async def consume(queue, pool, net, pars):
                 fps.append(fp[0])
             fname = get_file_name(idx, pars.CHUNK_SZ, pars.OUTPUT)
 
-            if len(io_futures) > 0:
-                await aio.gather(*io_futures)
-                io_futures = []
-            t = aio.create_task(write_file(pars.OUTPUT_DIR/fname,
-                                           valid_buffer, fps))
-            io_futures.append(t)
-            if len(missed_buffer) > 0:
-                t = aio.create_task(write_file(pars.MISSING_DIR/fname,
-                                               missed_buffer))
-                io_futures.append(t)
-            await aio.gather(*io_futures)
+            ## if len(io_futures) > 0:
+            ##     await aio.gather(*io_futures)
+            ##     io_futures = []
+            ## t = aio.create_task(write_file(pars.OUTPUT_DIR/fname,
+            ##                                valid_buffer, fps))
+            ## io_futures.append(t)
+            ## if len(missed_buffer) > 0:
+            ##     t = aio.create_task(write_file(pars.MISSING_DIR/fname,
+            ##                                    missed_buffer))
+            ##     io_futures.append(t)
+            ## await aio.gather(*io_futures)
             return
 
         # got a msg, put into the buffer
@@ -198,16 +206,16 @@ async def consume(queue, pool, net, pars):
                 logger.debug(f"fp type {type(fp)}, fp len = {len(fp)}")
                 fps.append(fp[0])
             fname = get_file_name(idx, pars.CHUNK_SZ, pars.OUTPUT)
-            if len(io_futures) > 0: 
-                await aio.gather(*io_futures)
-                io_futures = []
-            t = aio.create_task(write_file(pars.OUTPUT_DIR/fname,
-                                           valid_buffer, fps))
-            io_futures.append(t)
-            if len(missed_buffer) > 0:
-                t = aio.create_task(write_file(pars.MISSING_DIR/fname,
-                                               missed_buffer))
-                io_futures.append(t)
+            ##  if len(io_futures) > 0: 
+            ##      await aio.gather(*io_futures)
+            ##      io_futures = []
+            ##  t = aio.create_task(write_file(pars.OUTPUT_DIR/fname,
+            ##                                 valid_buffer, fps))
+            ##  io_futures.append(t)
+            ##  if len(missed_buffer) > 0:
+            ##      t = aio.create_task(write_file(pars.MISSING_DIR/fname,
+            ##                                     missed_buffer))
+            ##      io_futures.append(t)
             fps, missed_buffer, valid_buffer = [], [], []
 
         # time to process on GPU
@@ -221,12 +229,13 @@ async def consume(queue, pool, net, pars):
             cache = []
 
 
-async def main(pars, net):
-    queue = Queue(maxsize=int(pars.CHUNK_SZ*1.3))
+async def main(pars, net, worker_pool):
+    queue = Queue(maxsize=int(pars.CHUNK_SZ*2))
+    pool = mp.Pool()
     with open(pars.INPUT, 'r') as fp:
         fp = tqdm(fp) if args.tqdm else fp
-        io_task = aio.create_task(read_file(fp, queue, num_workers=4))
-        consumer = aio.create_task(consume(queue, worker_pool, net, pars))
+        io_task = aio.create_task(read_file(fp, queue))
+        consumer = aio.create_task(consume(queue, pool, net, pars))
 
         await io_task
         await consumer
@@ -292,7 +301,7 @@ if __name__ == "__main__":
     net = try_load_net(args.model)
     logger.debug("after loading net")
     #aio.run(main(pars, net), debug=True)
-    aio.run(main(pars, net), debug=False)
+    aio.run(main(pars, net, worker_pool), debug=False)
     
     if worker_pool:
         worker_pool.close()
