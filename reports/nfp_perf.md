@@ -59,8 +59,32 @@ Now, the validation (orange color) of the SMILE strings becomes compatible.
 
 ![asyncio queue](../figs/after_async_queue.png)
 
-### TO BE CONTINUED...
-
+```
+worker 6 bsz 256
+99782it [00:47, 2097.70it/s]
+worker 6 bsz 512
+99782it [00:46, 2166.08it/s]
+worker 6 bsz 1024
+99782it [00:45, 2186.95it/s]
+worker 6 bsz 2048
+99782it [00:45, 2207.15it/s]
+worker 12 bsz 256
+99782it [00:47, 2118.35it/s]
+worker 12 bsz 512
+99782it [00:46, 2168.31it/s]
+worker 12 bsz 1024
+99782it [00:45, 2200.32it/s]
+worker 12 bsz 2048
+99782it [00:45, 2203.89it/s]
+worker 24 bsz 256
+99782it [00:47, 2113.39it/s]
+worker 24 bsz 512
+99782it [00:46, 2157.44it/s]
+worker 24 bsz 1024
+99782it [00:45, 2194.75it/s]
+worker 24 bsz 2048
+99782it [00:45, 2196.99it/s]
+```
 
 
 ### Supplementary INFO: Initial bottleneck analysis
