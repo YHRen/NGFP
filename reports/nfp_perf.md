@@ -20,7 +20,6 @@ optimized.  I reimplemented the module `feature.py` as
 [`feature_static.py`](https://github.com/YHRen/NGFP/blob/master/NeuralGraph/feature_static.py).
 The new implementation has the same API and can be used as a drop-in replacement: `import feature_static as feature`. 
 The reimplemented functions are 4 times faster than the previous one, and brings ~15% speedup overall.
-
 Comparing with the previous profiling results, the `feature.py` (purple color not labeled) consumes much less time. But the `preprocessing.py` still takes a long time to run.
 
 ### ~3 fold speedup using parallel preprocessing
@@ -54,10 +53,6 @@ worker 12 bsz 1024
 ```
 
 Now, the validation (orange color) of the SMILE strings becomes compatible. 
-
-### TO BE CONTINUED...
-
-
 
 ### Supplementary INFO: Initial bottleneck analysis
 On 8700k with GTX 1080
