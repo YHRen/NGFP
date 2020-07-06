@@ -42,6 +42,9 @@ def load_csv(data_file, target_name, sample=None):
 
 def construct_dataset(data_file, target_name, sample=None, use_tqdm=None):
     x, y = load_csv(data_file, target_name, sample)
+    if len(target_name) == 1:
+        # PyTorch MSELoss treats one class differently from multi-class
+        y = np.squeeze(y)
     norm_fn, rstr_fn = normalize_array(y)
     target = norm_fn(y)
     data = MolData(x, target, use_tqdm=use_tqdm)
@@ -70,11 +73,14 @@ def main(args):
                                  args.sample)
     test_smiles, test_y = load_csv(DATAFOLDER/'test.csv', args.target_name,
                                    args.sample)
+    if len(args.target_name) == 1:
+        val_y, test_y = np.squeeze(val_y), np.squeeze(test_y)
     val_data = MolData(val_smiles, norm_fn(val_y), args.use_tqdm)
     test_data = MolData(test_smiles, norm_fn(test_y), args.use_tqdm)
 
     if args.fp_method == FP_METHODS[0]:
         raise NotImplementedError
+
     #def build_data_net(args, target):
     #    if args.fp_method == FP_METHODS[0]:
     #        #""" CFP """
@@ -104,7 +110,7 @@ def main(args):
         score = net.predict(test_loader)
         gt = test_y
         prd = rstr_fn(score)
-        res.append(mse(gt, prd))
+        res.append(mse(gt, prd, 0))
         print(f"mse_{DATAFOLDER.stem}_RUN_{_}: {mse(gt, prd)}")
         print(f"mse_percls_{DATAFOLDER.stem}_RUN_{_}: {mse(gt, prd, 0)}")
 
