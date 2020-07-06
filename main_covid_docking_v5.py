@@ -58,6 +58,11 @@ def main(args):
     OUTPUT = args.output_dir+DATAFOLDER.resolve().stem
 
     # load data
+    NCLASS = len(args.target_name)
+    if len(args.target_name) > 1:
+        OUTPUT += '_'.join(t for t in args.target_name)
+    else:
+        OUTPUT += args.target_name[0]
     train_data, norm_fn, rstr_fn =\
         construct_dataset(DATAFOLDER/'train.csv', args.target_name,
                           args.sample, args.use_tqdm)
@@ -67,8 +72,6 @@ def main(args):
                                    args.sample)
     val_data = MolData(val_smiles, norm_fn(val_y), args.use_tqdm)
     test_data = MolData(test_smiles, norm_fn(test_y), args.use_tqdm)
-    NCLASS = len(args.target_name)
-    OUTPUT += args.target_name
 
     if args.fp_method == FP_METHODS[0]:
         raise NotImplementedError
