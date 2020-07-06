@@ -112,7 +112,7 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("datafile", type=str,
+    parser.add_argument("datafolder", type=str,
                         help="Specify the input smi filename")
     parser.add_argument("fp_method", default="nfp", type=str,
                         help="Specify the fingerprint method",
@@ -139,4 +139,4 @@ if __name__ == '__main__':
     parsed_args = parser.parse_args()
     print("#",parsed_args)
     res = main(parsed_args)
-    print(f"{Path(parsed_args.datafile).stem}: {res[0]:.4f}, {res[1]:.4f}")
+    print(f"{Path(parsed_args.datafolder).stem}: {res[0]:.4f}, {res[1]:.4f}")
