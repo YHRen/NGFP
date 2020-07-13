@@ -147,7 +147,7 @@ if __name__ == '__main__':
                         choices=FP_METHODS)
     parser.add_argument("--output_dir", help="specify the output directory",
                         type=str, default="./output/")
-    parser.add_argument("-b", "--batch-size", help="batch size",
+    parser.add_argument("-b", "--batch_size", help="batch size",
                         default=64, type=int)
     parser.add_argument("-e", "--epochs", help="number of epochs",
                         default=500, type=int)
@@ -155,7 +155,7 @@ if __name__ == '__main__':
                         default=5, type=int)
     parser.add_argument("-l", "--lr", help="learning rate",
                         default=1e-3, type=float)
-    parser.add_argument("-f", "--fine-tune", help="load pretrained model",
+    parser.add_argument("-f", "--fine_tune", help="load pretrained model",
                         type=str)  # use pre-trained model on new targets
     parser.add_argument("--target_name", nargs='+',
                         choices=TARGET_CHOICES,
