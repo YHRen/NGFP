@@ -222,11 +222,12 @@ class PreFP(nn.Module):
         out = self.mlp(fp).squeeze()
         return out
 
-    def fit(self, loader_train, loader_valid, path, \
-            criterion=nn.BCEWithLogitsLoss(), \
+    def fit(self, loader_train, loader_valid, path,
+            criterion=nn.BCEWithLogitsLoss(),
             epochs=1000, early_stop=100, lr=1e-3):
         #  the only difference from QSAR is that we only train the MLP part.
-        optimizer = optim.Adam(self.mlp(), lr=lr, weight_decay=1e-4)
+        optimizer = optim.Adam(self.mlp.parameters(),
+                               lr=lr, weight_decay=1e-4)
         best_loss = np.inf
         last_saving = 0
         for epoch in range(epochs):
@@ -239,7 +240,7 @@ class PreFP(nn.Module):
                 #yb, y_ = yb[ix], y_[ix]
                 loss = criterion(y_, yb)
                 loss.backward()
-                optimizer.step()
+	optimizer.step()
             loss_valid = self.evaluate(loader_valid, criterion=criterion)
             print('[Epoch:%d/%d] %.1fs loss_train: %f loss_valid: %f' % (
                 epoch, epochs, time.time() - t0, loss.item(), loss_valid),
