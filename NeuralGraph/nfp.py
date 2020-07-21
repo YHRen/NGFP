@@ -1,6 +1,7 @@
 from .model import QSAR
-import torch
+import torch as T
 from torch.utils.model_zoo import load_url
+dev = T.device('cuda') if T.cuda.is_available() else T.device('cpu')
 
 model_urls={'Mpro':
             "https://github.com/YHRen/NGFP/blob/master/pretrained/MPro_mergedmulti_class.pkg?raw=true",
@@ -15,7 +16,7 @@ def nfp_net(pretrained=True, protein="Mpro", progress=True, **kwargs):
         f"choose protein from {supported_proteins}"
 
     if pretrained:
-        model = load_url(model_urls[protein], progress=progress)
+        model = load_url(model_urls[protein], progress=progress, map_location=dev)
     else:
         model = QSAR(**kwargs)
     return model
@@ -26,5 +27,5 @@ def nfp_net(pretrained=True, protein="Mpro", progress=True, **kwargs):
 # tmp  = requests.get(model_urls[protein])
 # tmp_f = tempfile.NamedTemporaryFile(mode="wb")
 # tmp_f.write(tmp.content)
-# model = torch.load(tmp_f.name)
+# model = T.load(tmp_f.name)
 # return model
