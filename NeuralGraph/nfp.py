@@ -1,7 +1,7 @@
 from .model import QSAR
+from .util import dev
 import torch as T
 from torch.utils.model_zoo import load_url
-dev = T.device('cuda') if T.cuda.is_available() else T.device('cpu')
 
 model_urls={'Mpro':
             "https://github.com/YHRen/NGFP/blob/master/pretrained/MPro_mergedmulti_class.pkg?raw=true",
