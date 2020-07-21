@@ -22,7 +22,7 @@ The code takes three required arguments: 1) input file, 2) output directory, 3) 
 for example:
 
 ```
-python examples/generate_nfp.py \
+python generate_nfp.py \
     -i ./dataset/canonical_ANL/DUD_sample.csv `# input file`\
     -o ./output/DUD_sample/ `# output directory`\
     --model ./pretrained/MPro_mergedmulti_class.pkg \
