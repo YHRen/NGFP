@@ -1,4 +1,5 @@
 #!/bin/bash
+cd "$(dirname "$0")"
 DATASET=${1:-DUD_sample.csv}
 CHUNK_SZ=${2:-100}
 OUTPUT=${DATASET%.csv}
