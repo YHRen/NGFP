@@ -98,7 +98,7 @@ def main(args):
         net = net.fit(train_loader, valid_loader, epochs=N_EPOCH, path=OUTPUT,
                       criterion=nn.MSELoss(), lr=LR)
         score = net.predict(test_loader)
-        gt = restore_func(target[test_idx])
+        gt = TARGET[test_idx] #restore_func(target[test_idx])
         prd = restore_func(score)
         res.append(mse(gt, prd))
         print(mse(gt,prd))
