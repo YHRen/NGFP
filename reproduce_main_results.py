@@ -60,12 +60,6 @@ def main(args):
     else:
         raise NotImplementedError
 
-    NET = None
-    if args.fp_method == FP_METHODS[0]:
-        NET = lambda : MLP(hid_dim=FP_LEN, n_class=1)
-    elif args.fp_method == FP_METHODS[1]:
-        NET = lambda : QSAR(hid_dim=128, n_class=1)
-
     def build_data_net(args, target):
         if args.fp_method == FP_METHODS[0]:
             #""" CFP """
