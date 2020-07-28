@@ -354,7 +354,7 @@ described by a combination of the following three tensors:
      to work)
 
    - **bond tensor** size: `(max_atoms, max_degree, num_bond_features)`
-   	 This matrix defines the atom features.
+   	 This matrix defines the bond features.
 
    	 The first two dimensions of this tensor represent the bonds defined in the
    	 edge tensor. The column in the bond tensor at the position of the bond index
