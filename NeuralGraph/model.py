@@ -32,6 +32,82 @@ class NeuralFingerPrint(nn.Module):
         fp = self.gop(atoms, bonds, edges)
         return fp
 
+
+class MultiheadMLP(nn.Module):
+
+    def __init__(self, hid_dim, n_class):
+        super(MultiheadMLP, self).__init__()
+        self.mlp = nn.Sequential(nn.Linear(hid_dim, hid_dim//2),
+                                 nn.ReLU())
+        self.multi_heads = nn.ModuleList()
+        for i in range(n_class):
+            self.multi_heads.append(
+                nn.Sequential(
+                    nn.Linear(hid_dim//2, hid_dim//4),
+                    nn.ReLU(),
+                    nn.Linear(hid_dim//4, 1)
+                )
+            )
+        self.to(dev)
+
+    def forward(self, fp):
+        x = self.mlp(fp)
+        res = []
+        for head in self.multi_heads:
+            res.append(head(x))
+        res = T.cat(res, dim=1)
+        return res
+
+    # fit, evaluate, predict, copy-paste from MLP's fit, not tested
+    def fit(self, loader_train, loader_valid, path, \
+            criterion=nn.BCEWithLogitsLoss(), \
+            epochs=1000, early_stop=100, lr=1e-3):
+        optimizer = optim.Adam(self.parameters(), lr=lr, weight_decay=1e-4)
+        best_loss = np.inf
+        last_saving = 0
+        for epoch in range(epochs):
+            t0 = time.time()
+            for xb, yb in loader_train:
+                xb, yb = xb.to(dev), yb.to(dev)
+                optimizer.zero_grad()
+                y_ = self.forward(xb)
+                loss = criterion(y_, yb)
+                loss.backward()
+                optimizer.step()
+            loss_valid = self.evaluate(loader_valid, criterion=criterion)
+            print('[Epoch:%d/%d] %.1fs loss_train: %f loss_valid: %f' % (
+                epoch, epochs, time.time() - t0, loss.item(), loss_valid),
+                  file=sys.stderr)
+            if loss_valid < best_loss:
+                T.save(self, path + '.pkg')
+                print('[Performance] loss_valid is improved from %f to %f, Save model to %s' % (
+                    best_loss, loss_valid, path + '.pkg'), file=sys.stderr)
+                best_loss = loss_valid
+                last_saving = epoch
+            else:
+                print('[Performance] loss_valid is not improved.',
+                      file=sys.stderr)
+            if early_stop is not None and epoch - last_saving > early_stop: break
+        return T.load(path + '.pkg')
+
+    def evaluate(self, loader, criterion=nn.BCEWithLogitsLoss()):
+        loss = 0
+        for xb, yb in loader:
+            xb, yb = xb.to(dev), yb.to(dev)
+            y_ = self.forward(xb)
+            loss += criterion(y_, yb).item()
+        return loss / len(loader)
+
+    def predict(self, loader):
+        score = []
+        for xb, yb in loader:
+            xb, yb = xb.to(dev), yb.to(dev)
+            y_ = self.forward(xb)
+            score.append(y_.data.cpu())
+        score = T.cat(score, dim=0).numpy()
+        return score
+
+
 class MLP(nn.Module):
     def __init__(self, hid_dim, n_class):
         super(MLP, self).__init__()
