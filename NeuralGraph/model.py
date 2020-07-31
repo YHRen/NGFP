@@ -177,7 +177,10 @@ class QSAR(nn.Module):
         self.nfp = NeuralFingerPrint(hid_dim, max_degree=max_degree,
                  gcn_activation=gcn_activation, gop_activation=gop_activation)
         # self.bn = nn.BatchNorm2d(80)
-        self.mlp = MLP(hid_dim, n_class)
+        # TODO:
+        # temporally move mlp to multi head mlp to test.
+        # self.mlp = MLP(hid_dim, n_class)
+        self.mlp = MultiheadMLP(hid_dim, n_class)
         self.to(dev)
 
     def forward(self, atoms, bonds, edges):
